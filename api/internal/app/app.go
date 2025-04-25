@@ -32,7 +32,7 @@ func New() *App {
 
 	router := chi.NewMux()
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost"},
+		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Set-Cookie", "Refresh", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Authorization"},
