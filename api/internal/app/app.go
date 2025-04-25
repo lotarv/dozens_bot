@@ -1,14 +1,15 @@
 package app
 
 import (
+	"log/slog"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/lotarv/dozens_bot/internal/config"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
 	"github.com/lotarv/dozens_bot/internal/storage"
 	"github.com/spf13/viper"
-	"log/slog"
-	"net/http"
 )
 
 type controller interface {
@@ -26,7 +27,7 @@ func (app *App) AddController(c controller) {
 }
 
 func New() *App {
-	config.MustInit("../.env")
+	config.MustInit(".env")
 	app := &App{}
 
 	router := chi.NewMux()

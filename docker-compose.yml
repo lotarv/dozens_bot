@@ -1,0 +1,53 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api:/app
+      - .env:/app/.env
+      - ./api/migrations:/app/migrations
+    ports:
+      - 3001:3001
+    command: go run cmd/main.go
+    depends_on:
+      - db
+    environment:
+      - PORT=3001
+
+  app:
+    image: node:20
+    command: npm run dev
+    volumes:
+      - ./app:/app
+      - .env:/app/.env
+    working_dir: /app
+    ports:
+      - 5173:5173
+    environment:
+      - VITE_API_URL=http://nginx:80/api
+      - HOST=0.0.0.0
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+      - app
+
+volumes:
+  db_data:
