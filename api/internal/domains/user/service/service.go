@@ -8,6 +8,9 @@ import (
 
 type repository interface {
 	GetAll(ctx context.Context) ([]types.User, error)
+	GetUserByID(ctx context.Context, userID int64) (*types.User, error)
+	UpdateUser(ctx context.Context, user *types.User) error
+	CreateUser(ctx context.Context, user *types.User) error
 }
 
 type UserService struct {
@@ -26,4 +29,16 @@ func (s *UserService) GetAll(ctx context.Context) ([]types.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (s *UserService) CreateUser(ctx context.Context, user *types.User) error {
+	return s.repo.CreateUser(ctx, user)
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, user *types.User) error {
+	return s.repo.UpdateUser(ctx, user)
+}
+
+func (s *UserService) GetUserByID(ctx context.Context, userID int64) (*types.User, error) {
+	return s.repo.GetUserByID(ctx, userID)
 }

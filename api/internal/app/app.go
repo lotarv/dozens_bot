@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/lotarv/dozens_bot/internal/auth"
 	"github.com/lotarv/dozens_bot/internal/config"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
 	"github.com/lotarv/dozens_bot/internal/storage"
@@ -34,13 +35,14 @@ func New() *App {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Set-Cookie", "Refresh", "X-CSRF-Token"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Telegram-Init-Data"},
 		ExposedHeaders:   []string{"Authorization"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	})
 
 	router.Use(c.Handler)
+	router.Use(auth.NewAuthMiddleWare())
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:" + viper.GetString("port"),

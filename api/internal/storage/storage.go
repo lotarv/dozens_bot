@@ -3,7 +3,6 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/jmoiron/sqlx"
@@ -30,7 +29,6 @@ func New() (*Storage, error) {
 	dbPort := os.Getenv("POSTGRES_PORT")
 	dbHost := os.Getenv("POSTGRES_HOST")
 	connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
-	slog.Info("Connection string: %s", connStr)
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
