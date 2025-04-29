@@ -2,8 +2,13 @@
 </script>
 
 <template>
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <keep-alive include="MembersView">
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
 </template>
+
 
 <style scoped>
 </style>
