@@ -53,6 +53,26 @@ async function fetchUsers() {
     }
 }
 
+async function fetchMembers() {
+    try {
+        isLoading.value = true;
+        error.value = null;
+
+        const response = await axios.get<User[]>(`${import.meta.env.VITE_API_URL}/members`, {
+            headers: {
+                'X-Telegram-Init-Data': getTelegramInitData(),
+            },
+        });
+        users.value = response.data;
+        console.log(users)
+    } catch (err) {
+        error.value = 'Failed to load users. Please try again later.';
+        console.error('Failed to fetch users:', err);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
 onBeforeMount(async () => {
     await createOrUpdateUser();
     await fetchUsers();
@@ -60,17 +80,8 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-    <div>
-        <div v-if="isLoading">Loading...</div>
-        <div v-else-if="error" class="error">{{ error }}</div>
-        <div v-else-if="users.length > 0">
-            <ul>
-                <li v-for="user in users" :key="user.id">username (ID: {{ user.id }})
-                </li>
-            </ul>
-        </div>
-        <div v-else>No users in db</div>
-    </div>
+    <h1>Dozen's bot</h1>
+    <p>В процессе разработки...</p>
 </template>
 
 <style>

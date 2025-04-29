@@ -3,7 +3,13 @@ const routes = [
     {
         path: '/',
         name:'main',
-        component: () => import('../views/MainView.vue')
+        component: () => import('../views/MembersView.vue')
+    },
+    {
+        path: '/declarations/:username',
+        name: "declaration",
+        component: () => import('../views/DeclarationsView.vue'),
+        props:true
     }
 ]
 

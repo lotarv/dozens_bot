@@ -14,6 +14,9 @@ services:
       - db
     environment:
       - PORT=3001
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
   app:
     image: node:20

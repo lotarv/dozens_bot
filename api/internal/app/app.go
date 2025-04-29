@@ -6,9 +6,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+
 	"github.com/lotarv/dozens_bot/internal/auth"
 	"github.com/lotarv/dozens_bot/internal/config"
+
+	// "github.com/lotarv/dozens_bot/internal/domains/bot"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
+	"github.com/lotarv/dozens_bot/internal/domains/users"
 	"github.com/lotarv/dozens_bot/internal/storage"
 	"github.com/spf13/viper"
 )
@@ -58,6 +62,12 @@ func New() *App {
 
 	userController := user.NewUserController(router, storage)
 	app.AddController(userController)
+
+	// botController := bot.NewBotController()
+	// app.AddController(botController)
+
+	usersController := users.NewUsersController(router)
+	app.AddController(usersController)
 
 	return app
 }
