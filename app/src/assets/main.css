@@ -2,48 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* SF Pro Display — REGULAR до BLACK */
+
 @font-face {
   font-family: 'SF Pro Display';
   src: url('../assets/sf-pro-display/SFPRODISPLAYREGULAR.OTF');
-  font-weight: normal;
+  font-weight: 400;
 }
-  
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('../assets/sf-pro-display/SFPRODISPLAYMEDIUM.OTF');
+  font-weight: 500;
+}
+
 @font-face {
   font-family: 'SF Pro Display';
   src: url('../assets/sf-pro-display/SFPRODISPLAYBOLD.OTF');
-  font-weight: bold;
-}
-  
-@font-face {
-  font-family: 'SF Pro Display';
-  src: url('../assets/sf-pro-display/SFPRODISPLAYBLACKITALIC.OTF');
-  font-weight: bold;
-  font-style: italic;
+  font-weight: 600;
 }
 
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('../assets/sf-pro-display/SFPRODISPLAYBOLD.OTF');
+  font-weight: 700;
+}
+
+
+/* SF Pro Text — REGULAR до BLACK */
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('../assets/sf-pro-text/SF-Pro-Text-Regular.otf');
+  font-weight: 400;
+}
 
 @font-face {
   font-family: 'SF Pro Text';
   src: url('../assets/sf-pro-text/SF-Pro-Text-Medium.otf');
-  font-weight: normal;
-}
-
-@font-face {
-  font-family: 'SF Pro Text';
-  src: url('../assets/sf-pro-text/SF-Pro-Text-Bold.otf');
-  font-weight: bold;
-}
-
-@font-face {
-  font-family: 'SF Pro Text';
-  src: url('../assets/sf-pro-text/SF-Pro-Text-BlackItalic.otf');
-  font-weight: bold;
-  font-style: italic;
+  font-weight: 500;
 }
 
 @font-face {
   font-family: 'SF Pro Text';
   src: url('../assets/sf-pro-text/SF-Pro-Text-Semibold.otf');
   font-weight: 600;
-  }
-  
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('../assets/sf-pro-text/SF-Pro-Text-Bold.otf');
+  font-weight: 700;
+}
