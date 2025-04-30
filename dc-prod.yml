@@ -1,0 +1,62 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api:/app
+      - .env:/app/.env
+      - ./api/migrations:/app/migrations
+    ports:
+      - 3001:3001
+    command: go run cmd/main.go
+    depends_on:
+      - db
+    environment:
+      - PORT=3001
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+  app:
+    image: node:latest
+    volumes:
+      - ./app:/app
+      - .env/:/app/.env
+    working_dir: /app
+    command: bash -c "npm install && npm run build"
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/nginx-prod.conf:/etc/nginx/nginx.conf
+      - ./app/dist:/usr/share/nginx/html
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - api
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  db_data:
