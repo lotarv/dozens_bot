@@ -4,6 +4,7 @@ import { ref, onBeforeMount, Ref } from 'vue';
 import { getTelegramInitData } from '../services/auth';
 import ArrowIcon from '@/components/icons/ArrowIcon.vue';
 import {RouterLink} from 'vue-router'
+import { members } from '@/mocks/members';
 interface Member {
     fio: string;
     avatar_url: string;
@@ -12,7 +13,7 @@ interface Member {
     username: string;
 }
 
-const members: Ref<Member[]> = ref([]);
+// const members: Ref<Member[]> = ref([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
@@ -33,29 +34,29 @@ async function createOrUpdateUser() {
     }
 }
 
-async function fetchMembers() {
-    try {
-        isLoading.value = true;
-        error.value = null;
+// async function fetchMembers() {
+//     try {
+//         isLoading.value = true;
+//         error.value = null;
 
-        const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
-            headers: {
-                'X-Telegram-Init-Data': getTelegramInitData(),
-            },
-        });
-        members.value = response.data;
-        console.log(members)
-    } catch (err) {
-        error.value = 'Failed to load members. Please try again later.';
-        console.error('Failed to fetch members:', err);
-    } finally {
-        isLoading.value = false;
-    }
-}
+//         const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
+//             headers: {
+//                 'X-Telegram-Init-Data': getTelegramInitData(),
+//             },
+//         });
+//         members.value = response.data;
+//         console.log(members)
+//     } catch (err) {
+//         error.value = 'Failed to load members. Please try again later.';
+//         console.error('Failed to fetch members:', err);
+//     } finally {
+//         isLoading.value = false;
+//     }
+// }
 
 onBeforeMount(async () => {
     await createOrUpdateUser();
-    await fetchMembers();
+    // await fetchMembers();
 });
 
 

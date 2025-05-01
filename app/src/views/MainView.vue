@@ -2,19 +2,37 @@
 import axios from 'axios';
 import { ref, onBeforeMount, Ref } from 'vue';
 import { getTelegramInitData } from '../services/auth';
-
-interface User {
-    id: number;
-    full_name: string;
-    avatar_url: string | null;
-    niche: string | null;
+import { current_user } from '@/mocks/current_user';
+import { meetings } from '@/mocks/meetings';
+import BellIcon from '@/components/icons/BellIcon.vue';
+import MeetingsSlider from '@/components/mainView/MeetingsSlider.vue';
+import ArrowIcon from '@/components/icons/ArrowIcon.vue';
+import ArrowUp from '@/components/icons/ArrowUp.vue';
+import MembersAvatars from '@/components/mainView/MembersAvatars.vue';
+import { members } from '@/mocks/members';
+import SadFaceIcon from '@/components/icons/SadFaceIcon.vue';
+import { declaration } from '@/mocks/declaration';
+interface Member {
+    fio: string;
+    avatar_url: string;
+    niche: string;
     annual_income: number;
-    telegram_id: string;
+    username: string;
 }
 
-const users: Ref<User[]> = ref([]);
+// const members: Ref<Member[]> = ref([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
+
+
+function shortenLastName(fullname: string): string {
+    let separated = fullname.split(" ")
+    if (separated.length == 1) {
+        return fullname
+    } else {
+        return separated[0] + " " + separated[1][0] + "."
+    }
+}
 
 async function createOrUpdateUser() {
     try {
@@ -33,67 +51,226 @@ async function createOrUpdateUser() {
     }
 }
 
-async function fetchUsers() {
-    try {
-        isLoading.value = true;
-        error.value = null;
+// async function fetchMembers() {
+//     try {
+//         isLoading.value = true;
+//         error.value = null;
 
-        const response = await axios.get<User[]>(`${import.meta.env.VITE_API_URL}/users`, {
-            headers: {
-                'X-Telegram-Init-Data': getTelegramInitData(),
-            },
-        });
-        users.value = response.data;
-        console.log(users)
-    } catch (err) {
-        error.value = 'Failed to load users. Please try again later.';
-        console.error('Failed to fetch users:', err);
-    } finally {
-        isLoading.value = false;
-    }
-}
+//         const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
+//             headers: {
+//                 'X-Telegram-Init-Data': getTelegramInitData(),
+//             },
+//         });
+//         members.value = response.data.reverse();
+//         console.log(members)
+//     } catch (err) {
+//         error.value = 'Failed to load members. Please try again later.';
+//         console.error('Failed to fetch members:', err);
+//     } finally {
+//         isLoading.value = false;
+//     }
+// }
 
-async function fetchMembers() {
-    try {
-        isLoading.value = true;
-        error.value = null;
-
-        const response = await axios.get<User[]>(`${import.meta.env.VITE_API_URL}/members`, {
-            headers: {
-                'X-Telegram-Init-Data': getTelegramInitData(),
-            },
-        });
-        users.value = response.data;
-        console.log(users)
-    } catch (err) {
-        error.value = 'Failed to load users. Please try again later.';
-        console.error('Failed to fetch users:', err);
-    } finally {
-        isLoading.value = false;
-    }
-}
 
 onBeforeMount(async () => {
     await createOrUpdateUser();
-    await fetchUsers();
+    // await fetchMembers()
+
 });
 </script>
 
 <template>
-    <h1>Dozen's bot</h1>
-    <p>В процессе разработки...</p>
+    <section class="flex flex-col p-1 gap-1 w-full min-h-screen">
+        <div class="header">
+            <div class="cur-user-name">{{ shortenLastName(current_user.fio) }}</div>
+            <div class="cur-user-benefits">
+                <img :src="current_user.avatar_url" alt="your_pic" class="cur-user-pic">
+                <div class="notifications">
+                    <BellIcon />
+                </div>
+            </div>
+        </div>
+        <!-- <div class="slider-container">
+            <MeetingsSlider />
+        </div> -->
+        <div class="info-block-1">
+            <div class="block current-declaration">
+                <div class="block-header">
+                    <div class="block-title">Текущая декларация</div>
+                    <div class="text-[24px]">
+                        <ArrowIcon />
+                    </div>
+                </div>
+                <div class="declaration-status">
+                    <div class="declaration-progress">{{ declaration.progress }} / 5</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" :style="{ width: (declaration.progress / 5 * 100) + '%' }"></div>
+                    </div>
+                    <div class="flex flex-row items-center gap-1">
+                        <span class="text-white text-[16px]">
+                            <SadFaceIcon />
+                        </span>
+                        <span class="text-[#FF6644]">грозит -{{ declaration.threat }} ₽</span>
+                    </div>
+                </div>
+            </div>
+            <div class="members-and-bank">
+                <div class="block members">
+                    <div class="block-header">
+                        <div class="block-title">Участники</div>
+                        <div class="text-[24px]">
+                            <ArrowIcon />
+                        </div>
+                    </div>
+                    <MembersAvatars :current_user="current_user" :members="members" />
+                </div>
+                <div class="block">
+                    <div class="block-header">
+                        <div class="block-title">Копилка</div>
+                        <div class="text-[24px]">
+                            <ArrowIcon />
+                        </div>
+                    </div>
+                    <div class="block-info">
+                        <div class="status">650 000 ₽</div>
+                        <div class="bank-state up">
+                            <span class="text-[16px]">
+                                <ArrowUp />
+                            </span>
+                            <span>25% за 7д</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="info-block-2">
+                <div class="block">
+                    <div class="block-header">
+                        <div class="block-title">Отчет</div>
+                        <div class="text-[24px]">
+                            <ArrowIcon />
+                        </div>
+                    </div>
+                    <div class="block-info">
+                        <div class="text-gray-500 text-base">Новый через 5д</div>
+                        <div class="status">Отправлен</div>
+                    </div>
+                </div>
+                <div class="block">
+                    <div class="block-header">
+                        <div class="block-title">Правила</div>
+                        <div class="text-[24px]">
+                            <ArrowIcon />
+                        </div>
+                    </div>
+                    <div class="block-info">
+                        <div class="status">Смотреть</div>
+                    </div>
+                </div>
+            </div>
+    </section>
 </template>
 
-<style>
+<style scoped>
+.header {
+    @apply flex flex-row justify-between pt-2 pr-4 pb-4 pl-4
+}
+
+.cur-user-name {
+    @apply font-medium text-4xl tracking-[-1px]
+}
+
+.cur-user-benefits {
+    @apply flex flex-row
+}
+
+.cur-user-pic {
+    @apply h-[48px] w-[48px] rounded-[50%]
+}
+
+.notifications {
+    @apply flex justify-center items-center h-[48px] w-[48px] rounded-[50%] bg-white text-white text-2xl -ml-2
+}
+
+.info-block-1 {
+    @apply flex flex-row gap-1
+}
+
+.current-declaration {
+    background-image: url('../assets/images/declaration-bg.png');
+    background-size: cover;
+    background-position: bottom;
+    background-repeat: no-repeat; 
+    position: relative;
+}
+
+.declaration-status {
+    @apply flex flex-col gap-2 bg-white p-3 rounded-[16px] absolute w-[95%] bottom-[4px] left-1/2 -translate-x-1/2;
+}
+
+.declaration-progress {
+    font-family: "SF Pro Display";
+    @apply text-[28px] leading-8
+}
+
+.progress-bar {
+    @apply h-[24px] rounded-[20px] bg-[#ebebeb] overflow-hidden
+}
+
+.progress-fill {
+    @apply h-[24px] bg-[#FF6644]
+}
+
+.members-and-bank {
+    @apply flex flex-col justify-between flex-1
+}
+
+.members {
+    border: 1px solid #000;
+}
+
+.info-block-2 {
+    @apply flex flex-row gap-1
+}
+
+.block {
+    @apply bg-white flex flex-col justify-between p-4 gap-6 rounded-[16px] min-w-[189px] min-h-[142px] flex-1
+}
+
+.block-header {
+    font-family: "SF Pro Text";
+    @apply flex flex-row justify-between font-medium
+}
+
+.block-info {
+    font-family: "SF Pro Text";
+    @apply flex flex-col tracking-[-0.4px] font-medium justify-center pr-5
+}
+
+.status {
+    font-family: "SF Pro Display";
+    @apply text-[28px] leading-8
+}
+
+.bank-state {
+    @apply flex flex-row items-center gap-1 font-semibold tracking-[-0.25px] leading-5 text-sm
+}
+
+.up {
+    @apply text-[#2EC055]
+}
+
 .error {
     color: red;
 }
+
 ul {
-    padding:0;
-    margin:0;
+    padding: 0;
+    margin: 0;
 }
-li{
-    padding:0;
-    margin:0;
+
+li {
+    padding: 0;
+    margin: 0;
 }
 </style>
