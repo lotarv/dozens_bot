@@ -12,6 +12,7 @@ import MembersAvatars from '@/components/mainView/MembersAvatars.vue';
 import { members } from '@/mocks/members';
 import SadFaceIcon from '@/components/icons/SadFaceIcon.vue';
 import { declaration } from '@/mocks/declaration';
+import CurrentDeclaration from '@/components/mainView/CurrentDeclaration.vue';
 interface Member {
     fio: string;
     avatar_url: string;
@@ -90,31 +91,15 @@ onBeforeMount(async () => {
                 </div>
             </div>
         </div>
-        <!-- <div class="slider-container">
+        <div class="slider-container">
             <MeetingsSlider />
-        </div> -->
+        </div>
         <div class="info-block-1">
-            <div class="block current-declaration">
-                <div class="block-header">
-                    <div class="block-title">Текущая декларация</div>
-                    <div class="text-[24px]">
-                        <ArrowIcon />
-                    </div>
-                </div>
-                <div class="declaration-status">
-                    <div class="declaration-progress">{{ declaration.progress }} / 5</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" :style="{ width: (declaration.progress / 5 * 100) + '%' }"></div>
-                    </div>
-                    <div class="flex flex-row items-center gap-1">
-                        <span class="text-white text-[16px]">
-                            <SadFaceIcon />
-                        </span>
-                        <span class="text-[#FF6644]">грозит -{{ declaration.threat }} ₽</span>
-                    </div>
-                </div>
+            <div class="flex-1 ">
+                <CurrentDeclaration :declaration="declaration"/>
             </div>
-            <div class="members-and-bank">
+            <div class="flex-1 border-3 border-black">
+                <div class="members-and-bank">
                 <div class="block members">
                     <div class="block-header">
                         <div class="block-title">Участники</div>
@@ -141,6 +126,7 @@ onBeforeMount(async () => {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
         <div class="info-block-2">
@@ -173,7 +159,7 @@ onBeforeMount(async () => {
 
 <style scoped>
 .header {
-    @apply flex flex-row justify-between pt-2 pr-4 pb-4 pl-4
+    @apply flex flex-row justify-between pt-2 pr-4 pb-3 pl-4
 }
 
 .cur-user-name {
@@ -196,16 +182,9 @@ onBeforeMount(async () => {
     @apply flex flex-row gap-1
 }
 
-.current-declaration {
-    background-image: url('../assets/images/declaration-bg.png');
-    background-size: cover;
-    background-position: bottom;
-    background-repeat: no-repeat; 
-    position: relative;
-}
-
 .declaration-status {
-    @apply flex flex-col gap-2 bg-white p-3 rounded-[16px] absolute w-[95%] bottom-[4px] left-1/2 -translate-x-1/2;
+    @apply flex flex-col gap-2 bg-white p-3 rounded-[16px]
+    /* absolute w-[95%] bottom-[4px] left-1/2 -translate-x-1/2; */
 }
 
 .declaration-progress {
@@ -222,12 +201,9 @@ onBeforeMount(async () => {
 }
 
 .members-and-bank {
-    @apply flex flex-col justify-between flex-1
+    @apply flex flex-col justify-between gap-1
 }
 
-.members {
-    border: 1px solid #000;
-}
 
 .info-block-2 {
     @apply flex flex-row gap-1
