@@ -68,6 +68,7 @@ func CheckTelegramAuth(initData string) (Credentials, error) {
 	// Create the secret key using HMAC and the given token
 	h := hmac.New(sha256.New, []byte("WebAppData"))
 	h.Write([]byte(os.Getenv("BOT_TOKEN")))
+	slog.Info(os.Getenv("BOT_TOKEN"))
 	secretKey := h.Sum(nil)
 
 	// Create the data check using the secret key and initData
@@ -96,7 +97,9 @@ func NewAuthMiddleWare() func(next http.Handler) http.Handler {
 				slog.Error("Missing X-Telegram-Init-Data header")
 				return
 			}
+			slog.Info("Trying to authorize: init_data: %v", initData)
 			creds, err := CheckTelegramAuth(initData)
+			slog.Info("Creds: %v", creds)
 			if err != nil {
 				http.Error(w, "Unauthorized: "+err.Error(), http.StatusUnauthorized)
 				slog.Error("Unauthorized", "error", err)
