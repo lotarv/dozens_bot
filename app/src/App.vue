@@ -1,11 +1,8 @@
 <script setup lang="ts">
+import MainView from './views/MainView.vue';
 </script>
-
 <template>
-  <router-view v-slot="{ Component }">
-    <keep-alive include="MainView">
-      <component :is="Component" />
-    </keep-alive>
+  <router-view>
   </router-view>
 </template>
 
