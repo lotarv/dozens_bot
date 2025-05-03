@@ -40,6 +40,7 @@ function shortenLastName(fullname: string): string {
 
 async function createOrUpdateUser() {
     try {
+        console.log(getTelegramInitData())
         await axios.post(
             `${import.meta.env.VITE_API_URL}/users`,
             {},
