@@ -10,6 +10,7 @@ const membersStore = useMembersStore()
 // const members: Ref<Member[]> = ref([]);
 const isLoading = membersStore.isLoading
 const error = membersStore.error
+console.log("LALALALALAL")
 onBeforeMount(async () => {
     membersStore.fetchMembers()
 })
