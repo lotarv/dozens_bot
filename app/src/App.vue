@@ -3,7 +3,7 @@
 
 <template>
   <router-view v-slot="{ Component }">
-    <keep-alive include="MembersView">
+    <keep-alive include="MainView">
       <component :is="Component" />
     </keep-alive>
   </router-view>

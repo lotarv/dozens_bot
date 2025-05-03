@@ -9,10 +9,12 @@ import MeetingsSlider from '@/components/mainView/MeetingsSlider.vue';
 import ArrowIcon from '@/components/icons/ArrowIcon.vue';
 import ArrowUp from '@/components/icons/ArrowUp.vue';
 import MembersAvatars from '@/components/mainView/MembersAvatars.vue';
-import { members } from '@/mocks/members';
+import MeetingCard from '@/components/mainView/MeetingCard.vue';
+// import { members } from '@/mocks/members';
 import SadFaceIcon from '@/components/icons/SadFaceIcon.vue';
 import { declaration } from '@/mocks/declaration';
 import CurrentDeclaration from '@/components/mainView/CurrentDeclaration.vue';
+import { useMembersStore } from '@/stores/membersStore';
 interface Member {
     fio: string;
     avatar_url: string;
@@ -21,7 +23,8 @@ interface Member {
     username: string;
 }
 
-// const members: Ref<Member[]> = ref([]);
+const membersStore = useMembersStore()
+const members: Ref<Member[]> = ref([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
@@ -52,36 +55,36 @@ async function createOrUpdateUser() {
     }
 }
 
-// async function fetchMembers() {
-//     try {
-//         isLoading.value = true;
-//         error.value = null;
+async function fetchMembers() {
+    try {
+        isLoading.value = true;
+        error.value = null;
 
-//         const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
-//             headers: {
-//                 'X-Telegram-Init-Data': getTelegramInitData(),
-//             },
-//         });
-//         members.value = response.data.reverse();
-//         console.log(members)
-//     } catch (err) {
-//         error.value = 'Failed to load members. Please try again later.';
-//         console.error('Failed to fetch members:', err);
-//     } finally {
-//         isLoading.value = false;
-//     }
-// }
+        const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
+            headers: {
+                'X-Telegram-Init-Data': getTelegramInitData(),
+            },
+        });
+        members.value = response.data.reverse();
+        console.log(members)
+    } catch (err) {
+        error.value = 'Failed to load members. Please try again later.';
+        console.error('Failed to fetch members:', err);
+    } finally {
+        isLoading.value = false;
+    }
+}
 
 
 onBeforeMount(async () => {
     await createOrUpdateUser();
-    // await fetchMembers()
+    await membersStore.fetchMembers();
 
 });
 </script>
 
 <template>
-    <section class="flex flex-col p-1 gap-1 w-full min-h-screen">
+    <section class="flex flex-col p-1 gap-1 w-full min-h-screen pb-[2.5rem]">
         <div class="header">
             <div class="cur-user-name">{{ shortenLastName(current_user.fio) }}</div>
             <div class="cur-user-benefits">
@@ -92,24 +95,26 @@ onBeforeMount(async () => {
             </div>
         </div>
         <div class="slider-container">
-            <MeetingsSlider />
+            <MeetingsSlider :meetings="meetings"/>
         </div>
         <div class="info-block-1">
-            <div class="flex-1 ">
+            <div class="flex-1 inactive">
                 <CurrentDeclaration :declaration="declaration"/>
             </div>
             <div class="flex-1 border-3 border-black">
                 <div class="members-and-bank">
-                <div class="block members">
-                    <div class="block-header">
-                        <div class="block-title">Участники</div>
-                        <div class="text-[24px]">
-                            <ArrowIcon />
+                <RouterLink :to="'/members'">
+                    <div class="block members">
+                        <div class="block-header">
+                            <div class="block-title">Участники</div>
+                            <div class="text-[24px]">
+                                <ArrowIcon />
+                            </div>
                         </div>
+                        <MembersAvatars :current_user="current_user" :members="membersStore.members" />
                     </div>
-                    <MembersAvatars :current_user="current_user" :members="members" />
-                </div>
-                <div class="block">
+                </RouterLink>
+                <div class="block inactive">
                     <div class="block-header">
                         <div class="block-title">Копилка</div>
                         <div class="text-[24px]">
@@ -130,7 +135,7 @@ onBeforeMount(async () => {
             </div>
         </div>
         <div class="info-block-2">
-                <div class="block">
+                <div class="block inactive">
                     <div class="block-header">
                         <div class="block-title">Отчет</div>
                         <div class="text-[24px]">
@@ -142,7 +147,7 @@ onBeforeMount(async () => {
                         <div class="status">Отправлен</div>
                     </div>
                 </div>
-                <div class="block">
+                <div class="block inactive">
                     <div class="block-header">
                         <div class="block-title">Правила</div>
                         <div class="text-[24px]">
@@ -236,17 +241,8 @@ onBeforeMount(async () => {
     @apply text-[#2EC055]
 }
 
-.error {
-    color: red;
+.inactive {
+  opacity: 0.55;
 }
 
-ul {
-    padding: 0;
-    margin: 0;
-}
-
-li {
-    padding: 0;
-    margin: 0;
-}
 </style>

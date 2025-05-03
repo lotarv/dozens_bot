@@ -23,7 +23,7 @@ const extraCount = computed(() => props.members.length > 10 ? props.members.leng
         </template>
         <div
         v-if="extraCount > 0"
-        class="extra-count avatar"> + {{ extraCount }}</div>
+        class="extra-count avatar"> +{{ extraCount }}</div>
     </div>
 </template>
 
@@ -38,6 +38,6 @@ const extraCount = computed(() => props.members.length > 10 ? props.members.leng
     @apply border-2 border-[#FF6644] z-10
 }
 .extra-count{
-    @apply w-[38px] h-[38px] rounded-full bg-gray-300 text-sm text-gray-700 flex items-center justify-center
+    @apply w-[38px] h-[38px] rounded-full bg-gray-300 text-base text-gray-700 font-medium flex items-center justify-center
 }
 </style>

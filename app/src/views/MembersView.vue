@@ -4,74 +4,32 @@ import { ref, onBeforeMount, Ref } from 'vue';
 import { getTelegramInitData } from '../services/auth';
 import ArrowIcon from '@/components/icons/ArrowIcon.vue';
 import {RouterLink} from 'vue-router'
-import { members } from '@/mocks/members';
-interface Member {
-    fio: string;
-    avatar_url: string;
-    niche: string;
-    annual_income: number;
-    username: string;
-}
-
+import { useMembersStore } from '@/stores/membersStore';
+import ArrowLeft from '@/components/icons/ArrowLeft.vue';
+const membersStore = useMembersStore()
 // const members: Ref<Member[]> = ref([]);
-const isLoading = ref(false);
-const error = ref<string | null>(null);
-
-async function createOrUpdateUser() {
-    try {
-        await axios.post(
-            `${import.meta.env.VITE_API_URL}/users`,
-            {},
-            {
-                headers: {
-                    'X-Telegram-Init-Data': getTelegramInitData(),
-                },
-            }
-        );
-    } catch (err) {
-        error.value = 'Failed to authenticate. Please try again.';
-        console.error('Authentication failed:', err);
-    }
-}
-
-// async function fetchMembers() {
-//     try {
-//         isLoading.value = true;
-//         error.value = null;
-
-//         const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
-//             headers: {
-//                 'X-Telegram-Init-Data': getTelegramInitData(),
-//             },
-//         });
-//         members.value = response.data;
-//         console.log(members)
-//     } catch (err) {
-//         error.value = 'Failed to load members. Please try again later.';
-//         console.error('Failed to fetch members:', err);
-//     } finally {
-//         isLoading.value = false;
-//     }
-// }
-
+const isLoading = membersStore.isLoading
+const error = membersStore.error
 onBeforeMount(async () => {
-    await createOrUpdateUser();
-    // await fetchMembers();
-});
-
-
+    membersStore.fetchMembers()
+})
 </script>
 
 <template>
-    <section class="p-1 flex flex-col gap-1 font-medium">
-        <h1 class="header">Участники</h1>
+    <section class="p-1 flex flex-col font-medium">
+        <div class="header">
+            <RouterLink :to="'/'">
+                <div class="p-2 bg-white w-12 h-12 rounded-full text-[22px] flex items-center justify-center"><ArrowLeft/></div>
+            </RouterLink>
+            <span>Участники</span>
+        </div>
         <div v-if="isLoading" class="text-center text-xl">Загрузка...</div>
         <div v-else-if="error" class="error">{{ error }}</div>
-        <div v-else-if="members.length > 0">
+        <div v-else-if="membersStore.members.length > 0">
             <div class="members-container">
                 <RouterLink
                 :to="`/declarations/${member.username}`"
-                class="member-card" v-for="member in members.reverse()" :key="member.username">
+                class="member-card" v-for="member in membersStore.members" :key="member.username">
                     <div class="member-header">
                         <div class="flex items-center gap-3">
                             <img class="member-photo" :src="member.avatar_url" alt="">
@@ -98,7 +56,7 @@ onBeforeMount(async () => {
 
 <style scoped>
 .header {
-    @apply text-[36px] self-center font-medium tracking-[-1px]
+    @apply text-[36px] font-medium tracking-[-1px] flex items-center p-3 gap-4
 }
 
 .members-container{

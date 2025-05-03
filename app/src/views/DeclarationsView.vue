@@ -8,7 +8,7 @@ const username = route.params.username
         <h1>Декларации пользователя: @{{ username }}</h1>
         <p>Раздел находится в разработке...</p>
         <RouterLink
-        :to="'/'"
+        :to="'/members'"
         class="bg-gray-300 rounded-lg p-2">Назад</RouterLink>
     </section>
 </template>
