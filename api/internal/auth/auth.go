@@ -110,6 +110,7 @@ func NewAuthMiddleWare() func(next http.Handler) http.Handler {
 
 			ctx := context.WithValue(r.Context(), types.ContextKeyUserID, creds.ID)
 			ctx = context.WithValue(ctx, types.ContextKeyCredentials, creds)
+			slog.Info("Successful authorize")
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
