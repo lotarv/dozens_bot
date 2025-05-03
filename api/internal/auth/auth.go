@@ -100,7 +100,9 @@ func NewAuthMiddleWare() func(next http.Handler) http.Handler {
 			slog.Info("Trying to authorize: init_data: %v", initData)
 			creds, err := CheckTelegramAuth(initData)
 			slog.Info("Creds: %v", creds)
+			slog.Info("error: %v", err)
 			if err != nil {
+				slog.Error("error happened due to ")
 				http.Error(w, "Unauthorized: "+err.Error(), http.StatusUnauthorized)
 				slog.Error("Unauthorized", "error", err)
 				return
