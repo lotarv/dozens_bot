@@ -13,10 +13,12 @@ let touchStartX = 0
 let touchEndX = 0
 
 function handleTouchStart(e: TouchEvent) {
+  e.preventDefault()
   touchStartX = e.touches[0].clientX
 }
 
 function handleTouchMove(e: TouchEvent) {
+  e.preventDefault()
   touchEndX = e.touches[0].clientX
 }
 
@@ -68,7 +70,6 @@ function handleTouchEnd() {
 }
 
 .slider-track {
-  touch-action: pan-x;
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
 }
