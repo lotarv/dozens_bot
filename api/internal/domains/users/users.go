@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/go-chi/chi/v5"
@@ -35,8 +36,26 @@ type Member struct {
 	Username     string `json:"username"`
 }
 
+func getHTTPClient() *http.Client {
+	transport := &http.Transport{}
+
+	proxy := os.Getenv("PROXY_URL")
+	if proxy != "" {
+		proxyURL, err := url.Parse(proxy)
+		if err != nil {
+			slog.Error("Failed to parse proxy URL", slog.String("Error", err.Error()))
+			panic(err)
+		}
+		transport.Proxy = http.ProxyURL(proxyURL)
+	}
+
+	return &http.Client{
+		Transport: transport,
+	}
+}
+
 func (c *UsersController) handleGetMembers(w http.ResponseWriter, r *http.Request) {
-	client := &http.Client{}
+	client := getHTTPClient()
 	url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", os.Getenv("NOTION_USERS_DATABASE_ID"))
 
 	// Простой запрос без фильтров
