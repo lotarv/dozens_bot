@@ -3,19 +3,24 @@ import { ref } from 'vue'
 import MeetingCard from './MeetingCard.vue'
 import { Meeting } from '@/types/Meeting'
 
-const props = defineProps<{ meetings: Meeting[] }>()
-const currentIndex = ref(0)
+const props = defineProps<{
+  meetings: Meeting[]
+}>()
+
+const currentIndex = ref(3)
+
 let touchStartX = 0
 let touchEndX = 0
 
-function onTouchStart(e: TouchEvent) {
+function handleTouchStart(e: TouchEvent) {
   touchStartX = e.touches[0].clientX
 }
-function onTouchMove(e: TouchEvent) {
+
+function handleTouchMove(e: TouchEvent) {
   touchEndX = e.touches[0].clientX
-  e.preventDefault()
 }
-function onTouchEnd() {
+
+function handleTouchEnd() {
   const delta = touchEndX - touchStartX
   if (delta > 50 && currentIndex.value > 0) {
     currentIndex.value--
@@ -24,56 +29,64 @@ function onTouchEnd() {
   }
 }
 </script>
-
 <template>
   <div class="slider-container">
     <div
       class="slider-track"
       :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-      @touchstart="onTouchStart"
-      @touchmove="onTouchMove"
-      @touchend="onTouchEnd"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
+      @touchend="handleTouchEnd"
     >
-      <div v-for="(meeting, index) in meetings" :key="index" class="slider-item">
-        <MeetingCard :meeting="meeting" :total="meetings.length" :currentIndex="index" />
+      <div
+        v-for="(meeting, index) in meetings"
+        :key="index"
+        class="slider-item"
+      >
+        <MeetingCard
+          :meeting="meeting"
+          :total="meetings.length"
+          :currentIndex="index"
+        />
       </div>
     </div>
 
     <div class="dots">
-      <div v-for="(m, i) in meetings" :key="i" class="dot" :class="{ active: i === currentIndex }" />
+      <div
+        v-for="(m, i) in meetings"
+        :key="i"
+        class="dot"
+        :class="{ active: i === currentIndex }"
+      ></div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .slider-container {
-  overflow: hidden;
-  position: relative;
+  @apply relative w-full overflow-hidden;
+}
+
+.slider-track {
+  touch-action: pan-x;
+  @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
 }
-.slider-track {
-  display: flex;
-  transition: transform 0.3s ease;
-}
+
 .slider-item {
   flex: 0 0 100%;
+  @apply box-border;
 }
+
 .dots {
-  position: absolute;
-  top: 0;
-  right: 3%;
-  display: flex;
-  gap: 4px;
-  margin-top: 1rem;
+  @apply flex justify-center gap-1 mt-3 absolute top-0 right-3;
 }
+
 .dot {
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
+  @apply w-2 h-2 bg-white/40 rounded-full transition-all;
 }
+
 .dot.active {
-  width: 20px;
-  background: white;
+  @apply w-5 bg-white;
 }
 </style>
