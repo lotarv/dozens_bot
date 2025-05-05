@@ -4,6 +4,9 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
 import './assets/main.css'
+// src/main.ts
+import 'swiper/css'
+import 'swiper/css/pagination'
 
 const app = createApp(App)
 app.use(router)

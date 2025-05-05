@@ -1,61 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import {Swiper, SwiperSlide} from 'swiper/vue';
 import MeetingCard from './MeetingCard.vue'
 import { Meeting } from '@/types/Meeting'
 
 const props = defineProps<{
   meetings: Meeting[]
 }>()
-
-const currentIndex = ref(3)
-const sliderTrack = ref<HTMLElement | null>(null)
-
-let touchStartX = 0
-let touchEndX = 0
-
-function handleTouchStart(e: TouchEvent) {
-  touchStartX = e.touches[0].clientX
-}
-
-function handleTouchMove(e: TouchEvent) {
-  e.preventDefault()
-  touchEndX = e.touches[0].clientX
-}
-
-function handleTouchEnd() {
-  const delta = touchEndX - touchStartX
-  if (delta > 50 && currentIndex.value > 0) {
-    currentIndex.value--
-  } else if (delta < -50 && currentIndex.value < props.meetings.length - 1) {
-    currentIndex.value++
-  }
-}
-
-onMounted(() => {
-  if (sliderTrack.value) {
-    sliderTrack.value.addEventListener('touchstart', handleTouchStart, { passive: false })
-    sliderTrack.value.addEventListener('touchmove', handleTouchMove, { passive: false })
-    sliderTrack.value.addEventListener('touchend', handleTouchEnd, { passive: false })
-  }
-})
-
-onUnmounted(() => {
-  if (sliderTrack.value) {
-    sliderTrack.value.removeEventListener('touchstart', handleTouchStart)
-    sliderTrack.value.removeEventListener('touchmove', handleTouchMove)
-    sliderTrack.value.removeEventListener('touchend', handleTouchEnd)
-  }
-})
 </script>
 
 <template>
   <div class="slider-container">
-    <div
-      ref="sliderTrack"
-      class="slider-track"
-      :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+    <Swiper
+      :slides-per-view="1"
+      :space-between="0"
+      :initial-slide="3"
+      :pagination="{ el: '.swiper-pagination', type: 'bullets', bulletClass: 'dot', bulletActiveClass: 'active' }"
+      :centered-slides="true"
+      class="swiper"
     >
-      <div
+      <SwiperSlide
         v-for="(meeting, index) in meetings"
         :key="index"
         class="slider-item"
@@ -65,17 +28,9 @@ onUnmounted(() => {
           :total="meetings.length"
           :currentIndex="index"
         />
-      </div>
-    </div>
-
-    <div class="dots">
-      <div
-        v-for="(m, i) in meetings"
-        :key="i"
-        class="dot"
-        :class="{ active: i === currentIndex }"
-      ></div>
-    </div>
+      </SwiperSlide>
+      <div class="swiper-pagination dots"></div>
+    </Swiper>
   </div>
 </template>
 
@@ -84,15 +39,12 @@ onUnmounted(() => {
   @apply relative w-full overflow-hidden;
 }
 
-.slider-track {
-  @apply flex transition-transform duration-500 ease-in-out;
-  width: 100%;
-  touch-action: none; /* Отключает стандартные жесты */
+.swiper {
+  @apply w-full;
 }
 
 .slider-item {
-  flex: 0 0 100%;
-  @apply box-border;
+  @apply box-border w-full;
 }
 
 .dots {
@@ -100,7 +52,7 @@ onUnmounted(() => {
 }
 
 .dot {
-  @apply w-2 h-2 bg-white/40 rounded-full transition-all;
+  @apply w-2 h-2 bg-white/40 rounded-full transition-all cursor-pointer;
 }
 
 .dot.active {
