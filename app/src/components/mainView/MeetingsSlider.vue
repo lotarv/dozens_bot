@@ -12,20 +12,20 @@ const currentIndex = ref(3)
 let touchStartX = 0
 let touchEndX = 0
 
-function handleTouchStart(e: TouchEvent) {
-  touchStartX = e.touches[0].clientX
+function handlePointerDown(e: PointerEvent) {
+  touchStartX = e.clientX;
 }
 
-function handleTouchMove(e: TouchEvent) {
-  touchEndX = e.touches[0].clientX
+function handlePointerMove(e: PointerEvent) {
+  touchEndX = e.clientX;
 }
 
-function handleTouchEnd() {
-  const delta = touchEndX - touchStartX
+function handlePointerUp() {
+  const delta = touchEndX - touchStartX;
   if (delta > 50 && currentIndex.value > 0) {
-    currentIndex.value--
+    currentIndex.value--;
   } else if (delta < -50 && currentIndex.value < props.meetings.length - 1) {
-    currentIndex.value++
+    currentIndex.value++;
   }
 }
 </script>
@@ -34,9 +34,9 @@ function handleTouchEnd() {
     <div
       class="slider-track"
       :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
+      @pointerdown="handlePointerDown"
+      @pointermove="handlePointerMove"
+      @pointerup="handlePointerUp"
     >
       <div
         v-for="(meeting, index) in meetings"
@@ -64,10 +64,12 @@ function handleTouchEnd() {
 
 <style scoped>
 .slider-container {
+  touch-action: pan-y;
   @apply relative w-full overflow-hidden;
 }
 
 .slider-track {
+  will-change: transform;
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
 }
