@@ -69,6 +69,7 @@ function handlePointerUp() {
 }
 
 .slider-track {
+  touch-action: none;
   will-change: transform;
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
