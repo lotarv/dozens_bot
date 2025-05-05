@@ -11,23 +11,49 @@ const currentIndex = ref(3)
 
 let touchStartX = 0
 let touchEndX = 0
+let isTouching = false
+
 
 function handlePointerDown(e: PointerEvent) {
-  touchStartX = e.clientX;
+  if (isTouching) return // если уже обрабатываем touch, игнорируем
+  touchStartX = e.clientX
 }
 
 function handlePointerMove(e: PointerEvent) {
-  touchEndX = e.clientX;
+  if (isTouching) return
+  touchEndX = e.clientX
 }
 
 function handlePointerUp() {
-  const delta = touchEndX - touchStartX;
+  if (isTouching) return
+  handleSwipe()
+}
+
+function handleTouchStart(e: TouchEvent) {
+  isTouching = true
+  touchStartX = e.touches[0].clientX
+}
+
+function handleTouchMove(e: TouchEvent) {
+  touchEndX = e.touches[0].clientX
+}
+
+function handleTouchEnd() {
+  handleSwipe()
+  setTimeout(() => {
+    isTouching = false // снимаем флаг после завершения
+  }, 0)
+}
+
+function handleSwipe() {
+  const delta = touchEndX - touchStartX
   if (delta > 50 && currentIndex.value > 0) {
-    currentIndex.value--;
+    currentIndex.value--
   } else if (delta < -50 && currentIndex.value < props.meetings.length - 1) {
-    currentIndex.value++;
+    currentIndex.value++
   }
 }
+
 </script>
 <template>
   <div class="slider-container">
@@ -37,6 +63,9 @@ function handlePointerUp() {
       @pointerdown="handlePointerDown"
       @pointermove="handlePointerMove"
       @pointerup="handlePointerUp"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
+      @touchend="handleTouchEnd"
     >
       <div
         v-for="(meeting, index) in meetings"
@@ -64,12 +93,12 @@ function handlePointerUp() {
 
 <style scoped>
 .slider-container {
-  touch-action: pan-y;
+  touch-action: manipulation;
   @apply relative w-full overflow-hidden;
 }
 
 .slider-track {
-  touch-action: none;
+  touch-action: none !important;
   will-change: transform;
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
