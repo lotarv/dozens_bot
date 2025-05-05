@@ -29,7 +29,7 @@ onBeforeMount(async () => {
         <div v-else-if="membersStore.members.length > 0">
             <div class="members-container">
                 <RouterLink
-                :to="`/declarations/${member.username}`"
+                :to="`/member/${member.username}`"
                 class="member-card" v-for="member in membersStore.members" :key="member.username">
                     <div class="member-header">
                         <div class="flex items-center gap-3">

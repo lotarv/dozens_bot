@@ -31,5 +31,21 @@ export const useMembersStore = defineStore('members', () => {
         }
     }
 
-    return {members, isLoading, error, fetchMembers}
+    function getMemberByUsername(username:string): Member{
+        for (let member of members.value) {
+            if (member.username == username) {
+                return member
+            }
+        }
+
+        return {
+            username: '',
+            fio: '',
+            avatar_url: '',
+            annual_income: 0,
+            niche: ''
+        } as Member
+    }
+
+    return {members, isLoading, error, fetchMembers, getMemberByUsername}
 })

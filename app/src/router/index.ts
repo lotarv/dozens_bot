@@ -1,7 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import MainView from '../views/MainView.vue'
 import MembersView from '../views/MembersView.vue'
-import DeclarationsView from '../views/DeclarationsView.vue'
+import MemberProfileView from '@/views/MemberProfileView.vue'
 const routes = [
     {
         path: '/',
@@ -14,9 +14,9 @@ const routes = [
         component: MembersView
     },
     {
-        path: '/declarations/:username',
+        path: '/member/:username',
         name: "declaration",
-        component: DeclarationsView,
+        component: MemberProfileView,
         props:true
     }
 ]

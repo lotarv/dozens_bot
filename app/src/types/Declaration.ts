@@ -1,4 +1,5 @@
 export interface Declaration{
     progress: number,
-    threat: number
+    threat: number,
+    date: string,
 }
