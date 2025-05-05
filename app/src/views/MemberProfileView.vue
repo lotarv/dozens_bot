@@ -4,7 +4,9 @@ import { useMembersStore } from '@/stores/membersStore'
 import { Member } from '@/types/Member'
 import ArrowLeft from '@/components/icons/ArrowLeft.vue'
 import { declarations } from '@/mocks/declarations'
+import { reports } from '@/mocks/reports'
 import DeclarationsComponent from '@/components/memberProfileView/DeclarationsComponent.vue'
+import ReportsComponent from '@/components/memberProfileView/ReportsComponent.vue'
 const route = useRoute()
 const membersStore = useMembersStore()
 const username = route.params.username.toString()
@@ -41,6 +43,9 @@ const member: Member = membersStore.getMemberByUsername(username)
         </div>
         <div class="declarations-container">
             <DeclarationsComponent :declarations="declarations"/>
+        </div>
+        <div class="reports-container">
+            <ReportsComponent :reports="reports"/>
         </div>
     </section>
 </template>
