@@ -2,35 +2,45 @@
 import {Swiper, SwiperSlide} from 'swiper/vue';
 import MeetingCard from './MeetingCard.vue'
 import { Meeting } from '@/types/Meeting'
+import { ref } from 'vue';
 
 const props = defineProps<{
   meetings: Meeting[]
 }>()
+
+const currentIndex = ref(3)
+
+function handleSlideChange(swiper:any) {
+  console.log(currentIndex.value)
+  currentIndex.value = swiper.realIndex
+}
 </script>
+
 
 <template>
   <div class="slider-container">
     <Swiper
       :slides-per-view="1"
       :space-between="0"
-      :initial-slide="3"
-      :pagination="{ el: '.swiper-pagination', type: 'bullets', bulletClass: 'dot', bulletActiveClass: 'active' }"
+      :initial-slide="currentIndex"
       :centered-slides="true"
       class="swiper"
+      @slide-change="handleSlideChange"
     >
-      <SwiperSlide
-        v-for="(meeting, index) in meetings"
-        :key="index"
-        class="slider-item"
-      >
-        <MeetingCard
-          :meeting="meeting"
-          :total="meetings.length"
-          :currentIndex="index"
-        />
-      </SwiperSlide>
-      <div class="swiper-pagination dots"></div>
-    </Swiper>
+  <SwiperSlide v-for="(meeting, index) in meetings" :key="index" class="slider-item">
+    <MeetingCard :meeting="meeting" :total="meetings.length" :currentIndex="index" />
+  </SwiperSlide>
+
+  <!-- Пагинация -->
+  <div class="swiper-pagination dots">
+    <div
+        v-for="(m, i) in meetings"
+        :key="i"
+        class="dot"
+        :class="{ active: i === currentIndex }"
+      ></div>
+  </div>
+</Swiper>
   </div>
 </template>
 
