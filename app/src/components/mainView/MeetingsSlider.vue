@@ -13,6 +13,7 @@ function onTouchStart(e: TouchEvent) {
 }
 function onTouchMove(e: TouchEvent) {
   touchEndX = e.touches[0].clientX
+  e.preventDefault()
 }
 function onTouchEnd() {
   const delta = touchEndX - touchStartX
