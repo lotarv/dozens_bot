@@ -18,6 +18,7 @@ function handleTouchStart(e: TouchEvent) {
 }
 
 function handleTouchMove(e: TouchEvent) {
+  e.preventDefault()
   touchEndX = e.touches[0].clientX
 }
 
