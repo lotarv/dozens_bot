@@ -19,6 +19,7 @@ function handleTouchStart(e: TouchEvent) {
 
 function handleTouchMove(e: TouchEvent) {
   touchEndX = e.touches[0].clientX
+  e.preventDefault()
 }
 
 function handleTouchEnd() {
@@ -47,16 +48,6 @@ onBeforeUnmount(() => {
     track.removeEventListener('touchend', handleTouchEnd as EventListener)
   }
 })
-
-
-function handleSwipe() {
-  const delta = touchEndX - touchStartX
-  if (delta > 50 && currentIndex.value > 0) {
-    currentIndex.value--
-  } else if (delta < -50 && currentIndex.value < props.meetings.length - 1) {
-    currentIndex.value++
-  }
-}
 
 </script>
 <template>
@@ -97,6 +88,7 @@ function handleSwipe() {
 
 .slider-track {
   will-change: transform;
+  touch-action: none;
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
 }
