@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import MeetingCard from './MeetingCard.vue'
 import { Meeting } from '@/types/Meeting'
 
@@ -8,17 +8,16 @@ const props = defineProps<{
 }>()
 
 const currentIndex = ref(3)
+const sliderTrack = ref<HTMLElement | null>(null)
 
 let touchStartX = 0
 let touchEndX = 0
 
 function handleTouchStart(e: TouchEvent) {
-  e.preventDefault()
   touchStartX = e.touches[0].clientX
 }
 
 function handleTouchMove(e: TouchEvent) {
-  e.preventDefault()
   touchEndX = e.touches[0].clientX
 }
 
@@ -30,15 +29,30 @@ function handleTouchEnd() {
     currentIndex.value++
   }
 }
+
+onMounted(() => {
+  if (sliderTrack.value) {
+    sliderTrack.value.addEventListener('touchstart', handleTouchStart, { passive: false })
+    sliderTrack.value.addEventListener('touchmove', handleTouchMove, { passive: false })
+    sliderTrack.value.addEventListener('touchend', handleTouchEnd, { passive: false })
+  }
+})
+
+onUnmounted(() => {
+  if (sliderTrack.value) {
+    sliderTrack.value.removeEventListener('touchstart', handleTouchStart)
+    sliderTrack.value.removeEventListener('touchmove', handleTouchMove)
+    sliderTrack.value.removeEventListener('touchend', handleTouchEnd)
+  }
+})
 </script>
+
 <template>
   <div class="slider-container">
     <div
+      ref="sliderTrack"
       class="slider-track"
       :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
     >
       <div
         v-for="(meeting, index) in meetings"
@@ -72,6 +86,7 @@ function handleTouchEnd() {
 .slider-track {
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;
+  touch-action: none; /* Отключает стандартные жесты */
 }
 
 .slider-item {
