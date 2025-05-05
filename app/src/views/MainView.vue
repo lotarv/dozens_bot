@@ -56,27 +56,6 @@ async function createOrUpdateUser() {
     }
 }
 
-async function fetchMembers() {
-    try {
-        isLoading.value = true;
-        error.value = null;
-
-        const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
-            headers: {
-                'X-Telegram-Init-Data': getTelegramInitData(),
-            },
-        });
-        members.value = response.data.reverse();
-        console.log(members)
-    } catch (err) {
-        error.value = 'Failed to load members. Please try again later.';
-        console.error('Failed to fetch members:', err);
-    } finally {
-        isLoading.value = false;
-    }
-}
-
-
 onBeforeMount(async () => {
     await createOrUpdateUser();
     await membersStore.fetchMembers();
