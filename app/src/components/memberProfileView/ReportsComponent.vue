@@ -53,7 +53,7 @@ function formatDate(dateStr:string) {
 
 .title {
     font-family: "SF Pro Display";
-    @apply pt-3 pr-4 pb-3 pl-4 font-[500] text-[28px] leading-8 tracking-[-0.4]
+    @apply pt-3 pr-4 pb-3 pl-4 font-[500] text-[28px] leading-8 tracking-[-0.4] w-full
 }
 
 .flex-container{
