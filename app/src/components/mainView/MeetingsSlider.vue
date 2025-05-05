@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import MeetingCard from './MeetingCard.vue'
 import { Meeting } from '@/types/Meeting'
 
@@ -11,26 +11,9 @@ const currentIndex = ref(3)
 
 let touchStartX = 0
 let touchEndX = 0
-let isTouching = false
 
-
-function handlePointerDown(e: PointerEvent) {
-  if (isTouching) return // если уже обрабатываем touch, игнорируем
-  touchStartX = e.clientX
-}
-
-function handlePointerMove(e: PointerEvent) {
-  if (isTouching) return
-  touchEndX = e.clientX
-}
-
-function handlePointerUp() {
-  if (isTouching) return
-  handleSwipe()
-}
 
 function handleTouchStart(e: TouchEvent) {
-  isTouching = true
   touchStartX = e.touches[0].clientX
 }
 
@@ -39,11 +22,32 @@ function handleTouchMove(e: TouchEvent) {
 }
 
 function handleTouchEnd() {
-  handleSwipe()
-  setTimeout(() => {
-    isTouching = false // снимаем флаг после завершения
-  }, 0)
+  const delta = touchEndX - touchStartX
+  if (delta > 50 && currentIndex.value > 0) {
+    currentIndex.value--
+  } else if (delta < -50 && currentIndex.value < props.meetings.length - 1) {
+    currentIndex.value++
+  }
 }
+
+onMounted(() => {
+  const track = document.querySelector('.slider-track')
+  if (track) {
+    track.addEventListener('touchstart', handleTouchStart as EventListener, { passive: false })
+    track.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false })
+    track.addEventListener('touchend', handleTouchEnd as EventListener)
+  }
+})
+
+onBeforeUnmount(() => {
+  const track = document.querySelector('.slider-track')
+  if (track) {
+    track.removeEventListener('touchstart', handleTouchStart as EventListener) 
+    track.removeEventListener('touchmove', handleTouchMove as EventListener)
+    track.removeEventListener('touchend', handleTouchEnd as EventListener)
+  }
+})
+
 
 function handleSwipe() {
   const delta = touchEndX - touchStartX
@@ -60,12 +64,6 @@ function handleSwipe() {
     <div
       class="slider-track"
       :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-      @pointerdown="handlePointerDown"
-      @pointermove="handlePointerMove"
-      @pointerup="handlePointerUp"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
     >
       <div
         v-for="(meeting, index) in meetings"
@@ -93,12 +91,11 @@ function handleSwipe() {
 
 <style scoped>
 .slider-container {
-  touch-action: manipulation;
   @apply relative w-full overflow-hidden;
+  touch-action: manipulation;
 }
 
 .slider-track {
-  touch-action: none !important;
   will-change: transform;
   @apply flex transition-transform duration-500 ease-in-out;
   width: 100%;

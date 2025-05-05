@@ -66,7 +66,7 @@ const isNextMeeting = computed(() => {
             </div>
             <div class="meeting-date">{{ formatDateTime(meeting.date) }}</div>
             <div class="meeting-location">
-                <span>{{ meeting.location }} 123</span>
+                <span>{{ meeting.location }}</span>
                 <span class="text-[24px]"><ArrowIcon></ArrowIcon></span>
             </div>
         </div>
