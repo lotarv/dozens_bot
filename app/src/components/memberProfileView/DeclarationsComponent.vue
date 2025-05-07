@@ -90,7 +90,7 @@ function getStatusText(status:string) {
 <style scoped>
 
 .declarations {
-    @apply flex flex-col pt-1 pl-1 pr-1 pb-4 bg-white rounded-[20px] gap-1
+    @apply flex flex-col p-2 bg-white rounded-[24px] gap-1
 }
 
 .title {
