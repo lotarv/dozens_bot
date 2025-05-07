@@ -46,6 +46,11 @@ const props = defineProps<{
     @apply flex flex-row justify-between
 }
 
+.title{
+    font-family: "SF Pro Text";
+    @apply font-medium text-base leading-6 tracking-[-0.4px]
+}
+
 .status {
     @apply flex flex-col gap-2 bg-white p-3 rounded-[16px] absolute w-[95%] bottom-[4px] left-1/2 -translate-x-1/2;
 }

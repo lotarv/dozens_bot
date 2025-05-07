@@ -21,7 +21,7 @@ function handleSlideChange(swiper:any) {
   <div class="slider-container">
     <Swiper
       :slides-per-view="1"
-      :space-between="16"
+      :space-between="4"
       :initial-slide="currentIndex"
       :centered-slides="true"
       class="swiper"

@@ -79,7 +79,8 @@ const isNextMeeting = computed(() => {
     @apply flex flex-col w-full justify-between p-4 gap-8 rounded-[16px] tracking-[-0.4px] bg-cover bg-center bg-no-repeat
 }
 .card-header{
-    @apply text-white leading-6
+    font-family: "SF Pro Text";
+    @apply text-white leading-6 tracking-[-0.4px] font-medium text-base
 }
 .avatars{
     @apply flex mb-2

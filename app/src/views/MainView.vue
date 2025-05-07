@@ -56,6 +56,7 @@ async function createOrUpdateUser() {
 }
 
 onBeforeMount(async () => {
+    window.Telegram.WebApp.disableVerticalSwipes();
     await membersStore.fetchMembers();
     await createOrUpdateUser();
 
@@ -63,7 +64,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-    <section class="flex flex-col p-1 gap-1 pb-[2.5rem]" v-if="!membersStore.isLoading">
+    <section class="flex flex-col p-1 gap-1" v-if="!membersStore.isLoading">
         <div class="header">
             <div class="cur-user-name">{{ shortenLastName(current_user.fio) }}</div>
             <div class="cur-user-benefits">
