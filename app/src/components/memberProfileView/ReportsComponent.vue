@@ -57,12 +57,12 @@ function formatDate(dateStr:string) {
 }
 
 .flex-container{
-    @apply flex flex-wrap justify-between gap-1
+    @apply grid grid-cols-2 gap-1 w-full
 }
 
 .single-report {
     font-family: "SF Pro Text";
-    @apply p-4 rounded-[16px] bg-white min-w-[185px] flex-1 font-[500] leading-6 tracking-[-0.4px]
+    @apply p-4 rounded-[16px] bg-white flex-1 font-[500] leading-6 tracking-[-0.4px]
 }
 
 .report-info{
