@@ -27,7 +27,7 @@ export const useMembersStore = defineStore('members', () => {
             error.value = 'Failed to load members. Please try again later.';
             console.error('Failed to fetch members:', err);
         } finally {
-            isLoading.value = false;
+            isLoading.value = false
         }
     }
 

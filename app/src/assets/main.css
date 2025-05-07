@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@layer utilities {
+  .p-base {
+    @apply p-2
+  }
+}
+
+
+
 /* SF Pro Display — REGULAR до BLACK */
 
 @font-face {

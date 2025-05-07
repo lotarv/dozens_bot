@@ -156,6 +156,7 @@ func (c *UsersController) handleGetMembers(w http.ResponseWriter, r *http.Reques
 
 	// Отправляем упрощенный ответ
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
 	if err := json.NewEncoder(w).Encode(users); err != nil {
 		slog.Error("failed to encode response", "error", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)

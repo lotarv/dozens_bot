@@ -24,7 +24,6 @@ interface Member {
 }
 
 const membersStore = useMembersStore()
-const members: Ref<Member[]> = ref([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
@@ -37,7 +36,7 @@ function shortenLastName(fullname: string): string {
         return separated[0] + " " + separated[1][0] + "."
     }
 }
-
+//TODO: add user store
 async function createOrUpdateUser() {
     try {
         console.log(getTelegramInitData())
@@ -57,14 +56,14 @@ async function createOrUpdateUser() {
 }
 
 onBeforeMount(async () => {
-    await createOrUpdateUser();
     await membersStore.fetchMembers();
+    await createOrUpdateUser();
 
 });
 </script>
 
 <template>
-    <section class="flex flex-col p-1 gap-1 pb-[2.5rem]">
+    <section class="flex flex-col p-1 gap-1 pb-[2.5rem]" v-if="!membersStore.isLoading">
         <div class="header">
             <div class="cur-user-name">{{ shortenLastName(current_user.fio) }}</div>
             <div class="cur-user-benefits">
