@@ -103,7 +103,7 @@ function getStatusText(status:string) {
 }
 
 .single-declaration {
-    @apply flex flex-row justify-between rounded-[16px] p-4
+    @apply flex flex-row justify-between rounded-[16px] p-4 opacity-[0.55]
 
 }
 

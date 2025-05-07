@@ -64,7 +64,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-    <section class="flex flex-col p-1 gap-1 w-full min-h-screen pb-[2.5rem]">
+    <section class="flex flex-col p-1 gap-1 pb-[2.5rem]">
         <div class="header">
             <div class="cur-user-name">{{ shortenLastName(current_user.fio) }}</div>
             <div class="cur-user-benefits">

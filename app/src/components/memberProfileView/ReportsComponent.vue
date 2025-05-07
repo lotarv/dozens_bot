@@ -23,8 +23,8 @@ function loadMore() {
 }
 function formatDate(dateStr:string) {
     const date = new Date(dateStr)
-    const day = date.getUTCDate();
-    const month = date.getMonth() + 1
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
     const year = date.getFullYear();
 
     return `${day}.${month}.${year}`
@@ -62,7 +62,7 @@ function formatDate(dateStr:string) {
 
 .single-report {
     font-family: "SF Pro Text";
-    @apply p-4 rounded-[16px] bg-white flex-1 font-[500] leading-6 tracking-[-0.4px]
+    @apply p-4 rounded-[16px] bg-white flex-1 font-[500] leading-6 tracking-[-0.4px] opacity-[0.55]
 }
 
 .report-info{
