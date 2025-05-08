@@ -9,11 +9,10 @@ type Document struct {
 }
 
 type Declaration struct {
-	ID           int    `json:"id"`
-	FileUrl      string `json:"file_url"`
-	AuthorUrl    string `json:"author_url"`
-	CreationDate string `json:"creation_date"`
-	EndDate      string `json:"end_date"`
+	ID             string `json:"id"`
+	AuthorNotionID string `json:"author_notion_id"`
+	CreationDate   string `json:"creation_date"`
+	EndDate        string `json:"end_date"`
 }
 
 type Report struct {

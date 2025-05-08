@@ -9,6 +9,7 @@ import (
 
 type service interface {
 	SyncMembersWithNotion() error
+	SyncDeclarationsWithNotion() error
 }
 
 type NotionSyncTransport struct {
@@ -25,6 +26,7 @@ func New(router *chi.Mux, service service) *NotionSyncTransport {
 
 func (t *NotionSyncTransport) RegisterRoutes() {
 	t.router.Post("/api/sync-members", t.syncMembersWithNotion)
+	t.router.Post("/api/sync-declarations", t.syncDeclarationsWithNotion)
 }
 
 func (t *NotionSyncTransport) syncMembersWithNotion(w http.ResponseWriter, r *http.Request) {
@@ -38,4 +40,16 @@ func (t *NotionSyncTransport) syncMembersWithNotion(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Successfully synchronized members with notion"))
 
+}
+
+func (t *NotionSyncTransport) syncDeclarationsWithNotion(w http.ResponseWriter, r *http.Request) {
+	err := t.service.SyncDeclarationsWithNotion()
+	if err != nil {
+		slog.Info("failed to synchronize declarations with notion", "error", err)
+		http.Error(w, "failed to synchronize declarations with notion", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Successfully synchronized declarations with notion"))
 }
