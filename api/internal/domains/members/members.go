@@ -1,4 +1,4 @@
-package users
+package members
 
 import (
 	"bytes"
@@ -10,30 +10,24 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lotarv/dozens_bot/internal/domains/members/types"
 )
 
-type UsersController struct {
+type MembersController struct {
 	router *chi.Mux
 }
 
-func NewUsersController(router *chi.Mux) *UsersController {
-	return &UsersController{router: router}
+func NewMembersController(router *chi.Mux) *MembersController {
+	return &MembersController{router: router}
 }
 
-func (c *UsersController) Build() {
+func (c *MembersController) Build() {
+	slog.Info("Building members controller...")
 	c.router.Get("/api/members", c.handleGetMembers)
 }
 
-func (c *UsersController) Run() {
+func (c *MembersController) Run() {
 
-}
-
-type Member struct {
-	FIO          string `json:"fio"`
-	AvatarUrl    string `json:"avatar_url"`
-	Niche        string `json:"niche"`
-	AnnualIncome int64  `json:"annual_income"`
-	Username     string `json:"username"`
 }
 
 func getHTTPClient() *http.Client {
@@ -54,7 +48,8 @@ func getHTTPClient() *http.Client {
 	}
 }
 
-func (c *UsersController) handleGetMembers(w http.ResponseWriter, r *http.Request) {
+func (c *MembersController) handleGetMembers(w http.ResponseWriter, r *http.Request) {
+	slog.Info("function is called")
 	client := getHTTPClient()
 	url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", os.Getenv("NOTION_USERS_DATABASE_ID"))
 
@@ -129,35 +124,35 @@ func (c *UsersController) handleGetMembers(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Преобразуем данные в упрощенный формат
-	users := make([]Member, 0, len(result.Results))
+	members := make([]types.Member, 0, len(result.Results))
 	for _, page := range result.Results {
-		user := Member{
+		member := types.Member{
 			AnnualIncome: page.Properties.AnnualIncome.Number,
 			Username:     page.Properties.Username.URL,
 		}
 
 		// Извлекаем ФИО (берем первый элемент title)
 		if len(page.Properties.FIO.Title) > 0 {
-			user.FIO = page.Properties.FIO.Title[0].PlainText
+			member.FIO = page.Properties.FIO.Title[0].PlainText
 		}
 
 		// Извлекаем Нишу Бизнеса (берем первый элемент rich_text)
 		if len(page.Properties.Niche.RichText) > 0 {
-			user.Niche = page.Properties.Niche.RichText[0].PlainText
+			member.Niche = page.Properties.Niche.RichText[0].PlainText
 		}
 
 		// Извлекаем Фото (берем URL первого файла, если есть)
 		if len(page.Properties.AvatarUrl.Files) > 0 {
-			user.AvatarUrl = page.Properties.AvatarUrl.Files[0].File.URL
+			member.AvatarUrl = page.Properties.AvatarUrl.Files[0].File.URL
 		}
 
-		users = append(users, user)
+		members = append(members, member)
 	}
 
 	// Отправляем упрощенный ответ
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "public, max-age=31536000")
-	if err := json.NewEncoder(w).Encode(users); err != nil {
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	if err := json.NewEncoder(w).Encode(members); err != nil {
 		slog.Error("failed to encode response", "error", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 	}

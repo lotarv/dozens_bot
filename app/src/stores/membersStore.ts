@@ -15,6 +15,7 @@ export const useMembersStore = defineStore('members', () => {
         try {
             isLoading.value = true;
             error.value = null;
+            console.log(`making a request for ${import.meta.env.VITE_API_URL}/members`)
     
             const response = await axios.get<Member[]>(`${import.meta.env.VITE_API_URL}/members`, {
                 headers: {

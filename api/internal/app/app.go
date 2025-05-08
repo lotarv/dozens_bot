@@ -7,12 +7,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
-	"github.com/lotarv/dozens_bot/internal/auth"
+	// "github.com/lotarv/dozens_bot/internal/auth"
 	"github.com/lotarv/dozens_bot/internal/config"
 
 	// "github.com/lotarv/dozens_bot/internal/domains/bot"
+	"github.com/lotarv/dozens_bot/internal/domains/members"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
-	"github.com/lotarv/dozens_bot/internal/domains/users"
 	"github.com/lotarv/dozens_bot/internal/storage"
 	"github.com/spf13/viper"
 )
@@ -34,7 +34,6 @@ func (app *App) AddController(c controller) {
 func New() *App {
 	config.MustInit(".env")
 	app := &App{}
-
 	router := chi.NewMux()
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost"},
@@ -46,7 +45,7 @@ func New() *App {
 	})
 
 	router.Use(c.Handler)
-	router.Use(auth.NewAuthMiddleWare())
+	// router.Use(auth.NewAuthMiddleWare())
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:" + viper.GetString("port"),
@@ -65,9 +64,9 @@ func New() *App {
 
 	// botController := bot.NewBotController()
 	// app.AddController(botController)
-
-	usersController := users.NewUsersController(router)
-	app.AddController(usersController)
+	slog.Info("adding members controller...")
+	membersController := members.NewMembersController(router)
+	app.AddController(membersController)
 
 	return app
 }
