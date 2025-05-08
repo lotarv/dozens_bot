@@ -1,4 +1,4 @@
-package members
+package service
 
 import (
 	"bytes"
@@ -8,47 +8,54 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/lotarv/dozens_bot/internal/domains/members/types"
+	member_types "github.com/lotarv/dozens_bot/internal/domains/members/types"
 	"github.com/lotarv/dozens_bot/internal/utils"
 )
 
-type MembersController struct {
-	router *chi.Mux
+type repository interface {
+	SyncMembersWithNotion([]member_types.Member) error
 }
 
-func NewMembersController(router *chi.Mux) *MembersController {
-	return &MembersController{router: router}
+type NotionSyncService struct {
+	repo repository
 }
 
-func (c *MembersController) Build() {
-	slog.Info("Building members controller...")
-	c.router.Get("/api/members", c.handleGetMembers)
+func New(repo repository) *NotionSyncService {
+	return &NotionSyncService{
+		repo: repo,
+	}
 }
 
-func (c *MembersController) Run() {
+func (s *NotionSyncService) SyncMembersWithNotion() error {
 
+	var members []member_types.Member
+	members, err := fetchMembersFromNotion()
+	if err != nil {
+		return err
+	}
+
+	err = s.repo.SyncMembersWithNotion(members)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (c *MembersController) handleGetMembers(w http.ResponseWriter, r *http.Request) {
-	slog.Info("function is called")
+func fetchMembersFromNotion() ([]member_types.Member, error) {
 	client := utils.GetHTTPClient()
 	url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", os.Getenv("NOTION_USERS_DATABASE_ID"))
-
 	// Простой запрос без фильтров
 	reqBody := map[string]interface{}{}
 	body, err := json.Marshal(reqBody)
 	if err != nil {
 		slog.Error("failed to marshal request", "error", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	httpReq, err := http.NewRequestWithContext(r.Context(), http.MethodPost, url, bytes.NewBuffer(body))
+	httpReq, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		slog.Error("failed to create request", "error", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	httpReq.Header.Set("Authorization", "Bearer "+os.Getenv("NOTION_API_TOKEN"))
@@ -58,15 +65,13 @@ func (c *MembersController) handleGetMembers(w http.ResponseWriter, r *http.Requ
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		slog.Error("failed to execute request", "error", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		slog.Error("unexpected status code", "code", resp.StatusCode)
-		http.Error(w, fmt.Sprintf("unexpected status code: %d", resp.StatusCode), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Парсим сырой JSON
@@ -101,14 +106,13 @@ func (c *MembersController) handleGetMembers(w http.ResponseWriter, r *http.Requ
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		slog.Error("failed to decode response", "error", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Преобразуем данные в упрощенный формат
-	members := make([]types.Member, 0, len(result.Results))
+	members := make([]member_types.Member, 0, len(result.Results))
 	for _, page := range result.Results {
-		member := types.Member{
+		member := member_types.Member{
 			AnnualIncome: page.Properties.AnnualIncome.Number,
 			Username:     page.Properties.Username.URL,
 		}
@@ -131,11 +135,5 @@ func (c *MembersController) handleGetMembers(w http.ResponseWriter, r *http.Requ
 		members = append(members, member)
 	}
 
-	// Отправляем упрощенный ответ
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	if err := json.NewEncoder(w).Encode(members); err != nil {
-		slog.Error("failed to encode response", "error", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-	}
+	return members, nil
 }

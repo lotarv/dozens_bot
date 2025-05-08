@@ -1,9 +1,15 @@
 -- +goose Up
 -- +goose StatementBegin
-
+CREATE TABLE members (
+    fio VARCHAR(255) NOT NULL,
+    avatar_url VARCHAR(2048),
+    niche VARCHAR(255),
+    annual_income BIGINT DEFAULT 0,
+    username VARCHAR(100) UNIQUE NOT NULL
+);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP TABLE members;
 -- +goose StatementEnd

@@ -12,6 +12,7 @@ import (
 
 	// "github.com/lotarv/dozens_bot/internal/domains/bot"
 	"github.com/lotarv/dozens_bot/internal/domains/members"
+	"github.com/lotarv/dozens_bot/internal/domains/notionSync"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
 	"github.com/lotarv/dozens_bot/internal/storage"
 	"github.com/spf13/viper"
@@ -64,9 +65,12 @@ func New() *App {
 
 	// botController := bot.NewBotController()
 	// app.AddController(botController)
-	slog.Info("adding members controller...")
+
 	membersController := members.NewMembersController(router)
 	app.AddController(membersController)
+
+	notionSyncController := notionSync.NewNotionSyncController(router, storage)
+	app.AddController(notionSyncController)
 
 	return app
 }
