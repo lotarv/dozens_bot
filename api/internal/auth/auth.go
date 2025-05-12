@@ -90,6 +90,11 @@ func CheckTelegramAuth(initData string) (Credentials, error) {
 func NewAuthMiddleWare() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if authHeader := r.Header.Get("Authorization"); authHeader == os.Getenv("AUTHORIZATION_TOKEN") {
+				// Если заголовок корректен, пропускаем запрос
+				next.ServeHTTP(w, r)
+				return
+			}
 			initData := r.Header.Get("X-Telegram-Init-Data")
 			if initData == "" {
 				http.Error(w, "X-Telegram-Init-Data header is required", http.StatusUnauthorized)

@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
-	// "github.com/lotarv/dozens_bot/internal/auth"
+	"github.com/lotarv/dozens_bot/internal/auth"
 	"github.com/lotarv/dozens_bot/internal/config"
 
 	// "github.com/lotarv/dozens_bot/internal/domains/bot"
@@ -47,7 +47,7 @@ func New() *App {
 	})
 
 	router.Use(c.Handler)
-	// router.Use(auth.NewAuthMiddleWare())
+	router.Use(auth.NewAuthMiddleWare())
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:" + viper.GetString("port"),
