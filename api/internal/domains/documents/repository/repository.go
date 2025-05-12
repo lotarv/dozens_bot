@@ -1,36 +1,22 @@
 package repository
 
 import (
-	"github.com/go-chi/chi/v5"
+	"github.com/jmoiron/sqlx"
+	"github.com/lotarv/dozens_bot/internal/domains/documents/types"
 )
 
 type DocumentsRepository struct {
+	db *sqlx.DB
 }
 
-func New(router *chi.Mux) *DocumentsRepository {
-	return &DocumentsRepository{}
+func New(db *sqlx.DB) *DocumentsRepository {
+	return &DocumentsRepository{
+		db: db,
+	}
 }
 
-func (r *DocumentsRepository) GetAllDeclarations(username string) {
-
-}
-
-func (r *DocumentsRepository) GetDeclarationByID(declaration_id int) {
-
-}
-
-func (r *DocumentsRepository) GetAllReports(username string) {
-
-}
-
-func (r *DocumentsRepository) GetReportByID(report_id int) {
-
-}
-
-func (r *DocumentsRepository) NewDeclaration() {
-
-}
-
-func (r *DocumentsRepository) NewDocument() {
-
+func (r *DocumentsRepository) GetRules() (types.Document, error) {
+	var rulesDoc types.Document
+	err := r.db.Get(&rulesDoc, `SELECT * FROM documents WHERE id=$1`, 10)
+	return rulesDoc, err
 }

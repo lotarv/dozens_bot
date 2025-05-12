@@ -2,20 +2,16 @@
 import { Meeting } from '@/types/Meeting';
 import ArrowIcon from '../icons/ArrowIcon.vue';
 import { computed } from 'vue';
+import { UseMeetingsStore } from '@/stores/meetingsStore';
+import { useMembersStore } from '@/stores/membersStore';
 
-import bg1 from "@/assets/images/slider-backgrounds/bg1.png"
-import bg2 from "@/assets/images/slider-backgrounds/bg2.png"
-import bg3 from "@/assets/images/slider-backgrounds/bg3.png"
-
+const meetingsStore = UseMeetingsStore()
 const props = defineProps<{
     meeting: Meeting;
     currentIndex: number,
     total: number,
 }>()
 
-const backgrounds = [
-    bg1, bg2, bg3
-]
 
 const colors = [
     "#FF6644",
@@ -48,7 +44,7 @@ const isNextMeeting = computed(() => {
 </script>
 <template>
     <div class="card" :style="{
-        backgroundImage: `url(${backgrounds[currentIndex % backgrounds.length]})`
+        backgroundImage: `url(${meetingsStore.backgrounds[currentIndex % meetingsStore.backgrounds.length]})`
     }">
         <div class="card-header">
             <div class="meeting-status">

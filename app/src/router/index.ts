@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 import MainView from '../views/MainView.vue'
 import MembersView from '../views/MembersView.vue'
 import MemberProfileView from '@/views/MemberProfileView.vue'
+import RulesView from '@/views/RulesView.vue'
 const routes = [
     {
         path: '/',
@@ -18,6 +19,11 @@ const routes = [
         name: "declaration",
         component: MemberProfileView,
         props:true
+    },
+    {
+        path:"/rules",
+        name:"rules",
+        component: RulesView
     }
 ]
 

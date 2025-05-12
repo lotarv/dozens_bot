@@ -11,6 +11,7 @@ import (
 	"github.com/lotarv/dozens_bot/internal/config"
 
 	// "github.com/lotarv/dozens_bot/internal/domains/bot"
+	"github.com/lotarv/dozens_bot/internal/domains/documents"
 	"github.com/lotarv/dozens_bot/internal/domains/members"
 	"github.com/lotarv/dozens_bot/internal/domains/notionSync"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
@@ -71,6 +72,9 @@ func New() *App {
 
 	notionSyncController := notionSync.NewNotionSyncController(router, storage)
 	app.AddController(notionSyncController)
+
+	documentsController := documents.NewDocumentsController(router, storage)
+	app.AddController(documentsController)
 
 	return app
 }

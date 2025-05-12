@@ -1,14 +1,9 @@
 package service
 
-import ()
+import "github.com/lotarv/dozens_bot/internal/domains/documents/types"
 
 type repository interface {
-	GetAllDeclarations(username string)
-	GetDeclarationByID(declaration_id int)
-	GetAllReports(username string)
-	GetReportByID(report_id int)
-	NewDeclaration()
-	NewDocument()
+	GetRules() (types.Document, error)
 }
 
 type DocumentsService struct {
@@ -21,26 +16,6 @@ func New(repo repository) *DocumentsService {
 	}
 }
 
-func (s *DocumentsService) GetAllDeclarations(username string) {
-
-}
-
-func (s *DocumentsService) GetDeclarationByID(declaration_id int) {
-
-}
-
-func (s *DocumentsService) GetAllReports(user_url string) {
-
-}
-
-func (s *DocumentsService) GetReportByID(report_id int) {
-
-}
-
-func (s *DocumentsService) NewDeclaration() {
-
-}
-
-func NewDocument() {
-
+func (s *DocumentsService) GetRules() (types.Document, error) {
+	return s.repo.GetRules()
 }

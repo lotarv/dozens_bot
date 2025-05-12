@@ -127,7 +127,7 @@ onBeforeMount(async () => {
                         <div class="status">Отправлен</div>
                     </div>
                 </div>
-                <div class="block inactive">
+                <RouterLink :to="'/rules'" class="block">
                     <div class="block-header">
                         <div class="block-title">Правила</div>
                         <div class="text-[24px]">
@@ -137,7 +137,7 @@ onBeforeMount(async () => {
                     <div class="block-info">
                         <div class="status">Смотреть</div>
                     </div>
-                </div>
+                </RouterLink>
             </div>
     </section>
 </template>
