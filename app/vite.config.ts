@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
     host: true,
-    allowedHosts:['app'],
+    allowedHosts:['app', 'localhost', 'nice-suddenly-ant.ngrok-free.app'],
     port: 5173,
   },
   resolve: {

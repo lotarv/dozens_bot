@@ -66,7 +66,7 @@ func New() *App {
 	// botController := bot.NewBotController()
 	// app.AddController(botController)
 
-	membersController := members.NewMembersController(router)
+	membersController := members.NewMembersController(router, storage)
 	app.AddController(membersController)
 
 	notionSyncController := notionSync.NewNotionSyncController(router, storage)
