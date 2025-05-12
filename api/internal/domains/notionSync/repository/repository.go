@@ -55,3 +55,35 @@ func (r *NotionSyncRepository) SyncDeclarationsWithNotion(declarations []documen
 	}
 	return nil
 }
+
+func (r *NotionSyncRepository) SyncReportsWithNotion(reports []document_types.Report) error {
+	query := `
+	INSERT INTO reports (id, author_notion_id, creation_date)
+	VALUES ($1, $2, $3)
+	ON CONFLICT(id) DO NOTHING`
+
+	for _, report := range reports {
+		_, err := r.db.Exec(query, report.ID, report.AuthorNotionID, report.CreationDate)
+		if err != nil {
+			slog.Error("failed to synchronize report", "report_id", report.ID, "error", err)
+			continue
+		}
+	}
+	return nil
+}
+
+func (r *NotionSyncRepository) SyncDocumentsWithNotion(documents []document_types.Document) error {
+	query := `
+	INSERT INTO documents (id, document_notion_id, text)
+	VALUES ($1,$2,$3)
+	ON CONFLICT(id) DO NOTHING`
+
+	for _, document := range documents {
+		_, err := r.db.Exec(query, document.ID, document.DocumentNotionID, document.Text)
+		if err != nil {
+			slog.Error("failed to synchronize document", "document_id", document.ID, "error", err)
+			continue
+		}
+	}
+	return nil
+}
