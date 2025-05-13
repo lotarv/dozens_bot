@@ -42,10 +42,10 @@ export default defineComponent({
 
 /* Стили для заголовков */
 .markdown-content :deep(h1) {
-  @apply text-4xl font-bold text-gray-900 mb-6;
+  @apply text-2xl font-bold text-gray-900 mb-6;
 }
 .markdown-content :deep(h2) {
-  @apply text-2xl font-semibold text-gray-800 mb-4;
+  @apply text-xl font-semibold text-gray-800 mb-4;
 }
 
 /* Стили для текста */

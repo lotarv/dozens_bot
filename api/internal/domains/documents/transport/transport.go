@@ -37,7 +37,8 @@ func (t *DocumentsTransport) getRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=86400")
+	// w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("Cache-Control", "no-cache")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(rules)
 	if err != nil {

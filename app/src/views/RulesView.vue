@@ -15,6 +15,7 @@ onMounted(async () => {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/rules`, {
             headers: {
                 'X-Telegram-Init-Data': getTelegramInitData(),
+                "Cache-Control":"no-cache"
             }
         })
         rulesStr.value = response.data.text
@@ -40,7 +41,7 @@ onMounted(async () => {
             <span>Правила</span>
         </div>
         <div v-if="isLoading" class="loading"></div>
-        <div v-else>
+        <div v-else class="px-8">
             <MarkDownComponent :text="rulesStr" />
         </div>
     </section>

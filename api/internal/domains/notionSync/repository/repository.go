@@ -76,7 +76,8 @@ func (r *NotionSyncRepository) SyncDocumentsWithNotion(documents []document_type
 	query := `
 	INSERT INTO documents (id, document_notion_id, text)
 	VALUES ($1,$2,$3)
-	ON CONFLICT(id) DO NOTHING`
+	ON CONFLICT(id) DO UPDATE
+	SET text=EXCLUDED.text`
 
 	for _, document := range documents {
 		_, err := r.db.Exec(query, document.ID, document.DocumentNotionID, document.Text)
