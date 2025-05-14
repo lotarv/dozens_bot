@@ -6,23 +6,28 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"sync"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	// "github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
+	"github.com/lotarv/dozens_bot/internal/domains/bot/repository"
+	"github.com/lotarv/dozens_bot/internal/storage"
 )
 
 type BotController struct {
-	bot              *tgbotapi.BotAPI
-	notionClient     *notionapi.Client
-	groupsDBID       string
-	usersDBID        string
-	pendingGroups    sync.Map //Хранит chatID -> ожидаемое название
-	registeredGroups sync.Map
-	registeredUsers  sync.Map
+	repo          *repository.BotRepository
+	bot           *tgbotapi.BotAPI
+	notionClient  *notionapi.Client
+	documentsDBID string
+	reportsDBID   string
 }
 
-func NewBotController() *BotController {
+func NewBotController(storage *storage.Storage) *BotController {
+
+	repo := repository.New(storage)
+
 	botToken := os.Getenv("BOT_TOKEN")
 	if botToken == "" {
 		slog.Error("BOT_TOKEN is not set")
@@ -35,16 +40,16 @@ func NewBotController() *BotController {
 		panic("NOTION_API_TOKEN is not set")
 	}
 
-	groupsDBID := os.Getenv("NOTION_GROUPS_DATABASE_ID")
-	if groupsDBID == "" {
-		slog.Error("NOTION_GROUPS_DATABASE_ID is not set")
-		panic("NOTION_GROUPS_DATABASE_ID is not set")
+	documentsDBID := os.Getenv("NOTION_DOCUMENTS_DATABASE_ID")
+	if documentsDBID == "" {
+		slog.Error("NOTION_DOCUMENTS_DATABASE_ID is not set")
+		panic("NOTION_DOCUMENTS_DATABASE_ID is not set")
 	}
 
-	usersDBID := os.Getenv("NOTION_USERS_DATABASE_ID")
-	if usersDBID == "" {
-		slog.Error("NOTION_USERS_DATABASE_ID is not set")
-		panic("NOTION_USERS_DATABASE_ID is not set")
+	reportsDBID := os.Getenv("NOTION_REPORTS_DATABASE_ID")
+	if reportsDBID == "" {
+		slog.Error("NOTION_REPORTS_DATABASE_ID is not set")
+		panic("NOTION_REPORTS_DATABASE_ID is not set")
 	}
 
 	bot, err := tgbotapi.NewBotAPI(botToken)
@@ -58,13 +63,11 @@ func NewBotController() *BotController {
 
 	notionClient := notionapi.NewClient(notionapi.Token(notionToken))
 	return &BotController{
-		bot:              bot,
-		notionClient:     notionClient,
-		groupsDBID:       groupsDBID,
-		usersDBID:        usersDBID,
-		pendingGroups:    sync.Map{},
-		registeredGroups: sync.Map{},
-		registeredUsers:  sync.Map{},
+		repo:          repo,
+		bot:           bot,
+		notionClient:  notionClient,
+		documentsDBID: documentsDBID,
+		reportsDBID:   reportsDBID,
 	}
 
 }
@@ -76,166 +79,146 @@ func (c *BotController) Build() {
 func (c *BotController) Run() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-
 	updates := c.bot.GetUpdatesChan(u)
-	ctx := context.Background()
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
 
-		chatID := update.Message.Chat.ID
-
-		if update.Message.NewChatMembers != nil {
-			for _, member := range update.Message.NewChatMembers {
-				if member.ID == c.bot.Self.ID {
-					c.handleBotAddedToGroup(update.Message.Chat)
-					continue
-				}
-			}
-		}
-		//Обработка ответа с названием сообщества
-		if title, ok := c.pendingGroups.Load(chatID); ok && title == true {
-			c.handleGroupTitleResponse(ctx, update.Message)
-		}
-
-		//Обработка сообщений в зарегистрированных группах
-		if _, ok := c.registeredGroups.Load(chatID); ok {
-			c.handleUserMessage(ctx, update.Message)
-		}
+		c.handleIncomingMessage(update.Message)
 	}
 }
 
-func (c *BotController) handleBotAddedToGroup(chat *tgbotapi.Chat) {
-	msg := tgbotapi.NewMessage(chat.ID, "Пожалуйста, укажите название сообщества \"Десятка\"")
-	_, err := c.bot.Send(msg)
-	if err != nil {
-		slog.Error("failed to send message", "chat_id", chat.ID, "error", err)
-		return
-	}
-	//Отмечаем, что ждем название
-	c.pendingGroups.Store(chat.ID, true)
-	slog.Info("Requested group title", "chat_id", chat.ID, "title", chat.Title)
-
-	//Собираем пользователей группы
-	// c.collectGroupUsers(ctx, chat)
-}
-
-func (c *BotController) handleGroupTitleResponse(ctx context.Context, message *tgbotapi.Message) {
-	chatID := message.Chat.ID
-	title := strings.TrimSpace(message.Text)
-	if title == "" {
-		msg := tgbotapi.NewMessage(chatID, "Название не может быть пустым. Пожалуйста, укажите название сообщества \"Десятка\"")
-		_, err := c.bot.Send(msg)
-		if err != nil {
-			slog.Error("Failed to send message", "chat_id", chatID, "error", err)
-		}
-		return
-	}
-
-	err := c.createGroupInNotion(ctx, chatID, title)
-	if err != nil {
-		slog.Error("failed to create group in Notion", "chat_id", chatID, "error", err)
-		msg := tgbotapi.NewMessage(chatID, "Не удалось сохранить сообщество. Попробуйте позже")
-		c.bot.Send(msg)
-		return
-	}
-	c.pendingGroups.Delete(chatID)
-	c.registeredGroups.Store(chatID, true)
-
-	msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Сообщество \"%s\" успешно создано!", title))
-	_, err = c.bot.Send(msg)
-	if err != nil {
-		slog.Error("Failed to send message", "chat_id", chatID, "error", err)
-	}
-	slog.Info("Group created", "chat_id", chatID, "title", title)
-}
-
-func (c *BotController) handleUserMessage(ctx context.Context, message *tgbotapi.Message) {
+func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 	chatID := message.Chat.ID
 	user := message.From
 	if user == nil {
-		slog.Warn("Message without user", "chat_id", chatID)
+		slog.Warn("Got a message without user", "chat_id", chatID, "message", message)
 		return
 	}
 
-	userKey := fmt.Sprintf("%d:%d", chatID, user.ID)
-	if _, ok := c.registeredUsers.Load(userKey); ok {
-		return //Пользователь уже зарегистрирован
+	text := message.Text
+	if strings.Contains(text, "#Отчет") {
+		reportParts := strings.SplitN(text, "#Отчет", 2)
+		reportText := strings.TrimSpace(reportParts[1])
+
+		username := user.UserName
+		if username == "" {
+			slog.Error("message without username", "reportText", reportText)
+			return
+		}
+
+		reportTime := time.Unix(int64(message.Date), 0).Format("02/01/2006")
+
+		slog.Info("Получен отчет", "user", username, "chat_id", chatID, "text", reportText, "reportTime", reportTime)
+
+		currentDocumentsAmount, ok := c.repo.GetDocumentsAmount()
+		if ok != nil {
+			slog.Error("failed to get documents amount:", "error", ok)
+			return
+		}
+
+		//Запись в таблицу "Документы"
+		err := c.createDocumentInNotion(context.Background(), currentDocumentsAmount+1, reportText)
+		if err != nil {
+			slog.Error("failed to save document in notion", "error", err)
+		} else {
+			slog.Info("new document was saved in notion")
+		}
+
+		//Сразу синхронизируем бд
+		if err := helpers.TriggerSyncDocuments(); err != nil {
+			slog.Error("failed to synchronize documents after insertion", "error", err)
+			return
+		}
+
+		//Получаем notion_id документа после синхронизации
+
+		document_notion_id, err := c.repo.GetDocumentNotionId(currentDocumentsAmount + 1)
+		if err != nil {
+			slog.Error("failed to get document notion id", "error", err)
+			return
+		}
+
+		author_notion_id, err := c.repo.GetMemberNotionId("incetro")
+		if err != nil {
+			slog.Error("failed to get member notion id", "error", err)
+			return
+		}
+
+		//Создаем запись в таблице с отчетами
+
+		if err := c.createReportInNotion(context.Background(), document_notion_id, author_notion_id, reportTime); err != nil {
+			slog.Error("failed to save report in notion", "error", err)
+			return
+		}
+
+		slog.Info("successfully saved new report", "documentID", currentDocumentsAmount+1)
+
 	}
-
-	slog.Info("User messsage",
-		"chat_id", chatID,
-		"user_id", user.ID,
-		"first_name", user.FirstName,
-		"last_name", user.LastName,
-		"username", user.UserName,
-	)
-
-	//Получаем фотографии пользователя
-	photos, err := c.bot.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{
-		UserID: user.ID,
-		Limit:  1,
-	})
-
-	if err != nil {
-		slog.Error("failed to get user profile photos", "chat_id", chatID, "user_id", user.ID, "eror", err)
-	} else if photos.TotalCount > 0 && len(photos.Photos) > 0 {
-		photo := photos.Photos[0][0]
-		slog.Info("User profile photo",
-			"chat_id", chatID,
-			"user_id", user.ID,
-			"file_id", photo.FileID,
-			"file_size", photo.FileSize,
-			"width", photo.Width,
-			"height", photo.Height,
-		)
-
-	} else {
-		slog.Info("No profile photo", "chat_id", chatID, "user_id", user.ID)
-	}
-
-	// Отправляем сообщение о регистрации
-	name := user.FirstName
-	if name == "" {
-		name = user.UserName
-	}
-	if name == "" {
-		name = fmt.Sprintf("ID%d", user.ID)
-	}
-	msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Пользователь %s зарегистрирован в сообществе", name))
-	_, err = c.bot.Send(msg)
-	if err != nil {
-		slog.Error("Failed to send registration message", "chat_id", chatID, "user_id", user.ID, "error", err)
-		return
-	}
-
-	// Отмечаем пользователя как зарегистрированного
-	c.registeredUsers.Store(userKey, true)
-
 }
 
-func (c *BotController) createGroupInNotion(ctx context.Context, chatID int64, title string) error {
+func (c *BotController) createDocumentInNotion(ctx context.Context, id int, text string) error {
 	page := &notionapi.PageCreateRequest{
 		Parent: notionapi.Parent{
 			Type:       "database_id",
-			DatabaseID: notionapi.DatabaseID(c.groupsDBID),
+			DatabaseID: notionapi.DatabaseID(c.documentsDBID),
 		},
 		Properties: notionapi.Properties{
-			"Title": notionapi.TitleProperty{
+			"ID": notionapi.TitleProperty{
 				Title: []notionapi.RichText{
-					{Text: &notionapi.Text{Content: title}},
+					{
+						Text: &notionapi.Text{
+							Content: fmt.Sprintf("%d", id),
+						},
+					},
 				},
 			},
-			"ChatID": notionapi.NumberProperty{
-				Number: float64(chatID),
+			"Текст": notionapi.RichTextProperty{
+				RichText: []notionapi.RichText{
+					{
+						Text: &notionapi.Text{
+							Content: text,
+						},
+					},
+				},
 			},
 		},
 	}
 
 	_, err := c.notionClient.Page.Create(ctx, page)
-	if err != nil {
-		return err
+	return err
+}
+
+func (c *BotController) createReportInNotion(ctx context.Context, documentNotionID, authorNotionID, date string) error {
+	page := &notionapi.PageCreateRequest{
+		Parent: notionapi.Parent{
+			Type:       "database_id",
+			DatabaseID: notionapi.DatabaseID(c.reportsDBID),
+		},
+		Properties: notionapi.Properties{
+			"ID": notionapi.RelationProperty{
+				Relation: []notionapi.Relation{
+					{ID: notionapi.PageID(documentNotionID)},
+				},
+			},
+			"Автор": notionapi.RelationProperty{
+				Relation: []notionapi.Relation{
+					{ID: notionapi.PageID(authorNotionID)},
+				},
+			},
+			"Дата создания": notionapi.TitleProperty{
+				Title: []notionapi.RichText{
+					{
+						Text: &notionapi.Text{
+							Content: date,
+						},
+					},
+				},
+			},
+		},
 	}
-	return nil
+
+	_, err := c.notionClient.Page.Create(ctx, page)
+	return err
 }

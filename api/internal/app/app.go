@@ -10,7 +10,7 @@ import (
 	"github.com/lotarv/dozens_bot/internal/auth"
 	"github.com/lotarv/dozens_bot/internal/config"
 
-	// "github.com/lotarv/dozens_bot/internal/domains/bot"
+	"github.com/lotarv/dozens_bot/internal/domains/bot"
 	"github.com/lotarv/dozens_bot/internal/domains/documents"
 	"github.com/lotarv/dozens_bot/internal/domains/members"
 	"github.com/lotarv/dozens_bot/internal/domains/notionSync"
@@ -64,8 +64,8 @@ func New() *App {
 	userController := user.NewUserController(router, storage)
 	app.AddController(userController)
 
-	// botController := bot.NewBotController()
-	// app.AddController(botController)
+	botController := bot.NewBotController(storage)
+	app.AddController(botController)
 
 	membersController := members.NewMembersController(router, storage)
 	app.AddController(membersController)
