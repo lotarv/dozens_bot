@@ -2,14 +2,13 @@ package bot
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	// "github.com/google/uuid"
+	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/repository"
@@ -112,14 +111,10 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 
 		slog.Info("Получен отчет", "user", username, "chat_id", chatID, "text", reportText, "reportTime", reportTime)
 
-		currentDocumentsAmount, ok := c.repo.GetDocumentsAmount()
-		if ok != nil {
-			slog.Error("failed to get documents amount:", "error", ok)
-			return
-		}
+		uuidStr := uuid.New().String()
 
 		//Запись в таблицу "Документы"
-		err := c.createDocumentInNotion(context.Background(), currentDocumentsAmount+1, reportText)
+		err := c.createDocumentInNotion(context.Background(), uuidStr, reportText)
 		if err != nil {
 			slog.Error("failed to save document in notion", "error", err)
 		} else {
@@ -134,7 +129,7 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 
 		//Получаем notion_id документа после синхронизации
 
-		document_notion_id, err := c.repo.GetDocumentNotionId(currentDocumentsAmount + 1)
+		document_notion_id, err := c.repo.GetDocumentNotionId(uuidStr)
 		if err != nil {
 			slog.Error("failed to get document notion id", "error", err)
 			return
@@ -153,12 +148,12 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 			return
 		}
 
-		slog.Info("successfully saved new report", "documentID", currentDocumentsAmount+1)
+		slog.Info("successfully saved new report", "documentID", uuidStr)
 
 	}
 }
 
-func (c *BotController) createDocumentInNotion(ctx context.Context, id int, text string) error {
+func (c *BotController) createDocumentInNotion(ctx context.Context, id string, text string) error {
 	page := &notionapi.PageCreateRequest{
 		Parent: notionapi.Parent{
 			Type:       "database_id",
@@ -169,7 +164,7 @@ func (c *BotController) createDocumentInNotion(ctx context.Context, id int, text
 				Title: []notionapi.RichText{
 					{
 						Text: &notionapi.Text{
-							Content: fmt.Sprintf("%d", id),
+							Content: id,
 						},
 					},
 				},

@@ -14,7 +14,7 @@ type Report struct {
 }
 
 type Document struct {
-	ID               int    `json:"id"`
+	ID               string    `json:"id"`
 	DocumentNotionID string `json:"document_notion_id" db:"document_notion_id"`
 	Text             string `json:"text" db:"text"`
 }

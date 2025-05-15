@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -443,12 +442,7 @@ func fetchDocumentsFromNotion() ([]document_types.Document, error) {
 		// Извлекаем ID (должно быть числом)
 		if len(page.Properties.ID.Title) > 0 {
 			idStr := page.Properties.ID.Title[0].PlainText
-			id, err := strconv.Atoi(idStr)
-			if err != nil {
-				slog.Error("не удалось преобразовать ID в число", "document_notion_id", page.ID, "id", idStr, "ошибка", err)
-				return nil, fmt.Errorf("не удалось преобразовать ID %s для документа %s: %w", idStr, page.ID, err)
-			}
-			doc.ID = id
+			doc.ID = idStr
 		} else {
 			slog.Error("поле ID пустое", "document_notion_id", page.ID)
 			return nil, fmt.Errorf("поле ID пустое для документа %s", page.ID)

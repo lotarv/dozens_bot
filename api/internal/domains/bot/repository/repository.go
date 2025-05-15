@@ -24,9 +24,9 @@ func (r *BotRepository) GetDocumentsAmount() (int, error) {
 	return count, nil
 }
 
-func (r *BotRepository) GetDocumentNotionId(db_id int) (string, error) {
+func (r *BotRepository) GetDocumentNotionId(db_uuid string) (string, error) {
 	var document_notion_id string
-	err := r.db.QueryRow("SELECT document_notion_id FROM documents WHERE id = $1", db_id).Scan(&document_notion_id)
+	err := r.db.QueryRow("SELECT document_notion_id FROM documents WHERE id = $1", db_uuid).Scan(&document_notion_id)
 	if err != nil {
 		return "", err
 	}

@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE documents (
-    id integer PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     document_notion_id VARCHAR(36) NOT NULL,
     text TEXT
 )
