@@ -35,7 +35,7 @@ function goBack() {
             <div @click="goBack"class="p-2 bg-white w-12 h-12 rounded-full text-[22px] flex items-center justify-center">
                 <ArrowLeft />
             </div>
-            <p class="flex justify-between w-full items-center"><span>Отчет</span> <span class="text-base">{{ formatDate(report.creation_date) }}</span></p>
+            <p class="flex-1 flex justify-between items-center"><span>Отчет</span> <span class="text-base">{{ formatDate(report.creation_date) }}</span></p>
         </div>
         <div class="px-8">
             <MarkDownComponent :text="report.text"></MarkDownComponent>
