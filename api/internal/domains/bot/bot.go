@@ -101,8 +101,10 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 	}
 
 	text := message.Text
-	if strings.Contains(text, "#Отчет") {
-		reportParts := strings.SplitN(text, "#Отчет", 2)
+	lowerText := strings.ToLower(text)
+
+	if strings.Contains(lowerText, "#отчет") {
+		reportParts := strings.SplitN(text, "#отчет", 2)
 		reportText := strings.TrimSpace(reportParts[1])
 
 		username := user.UserName
