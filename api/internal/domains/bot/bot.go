@@ -108,9 +108,6 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 		}
 
 		reportTime := time.Unix(int64(message.Date), 0).Format("02/01/2006")
-
-		slog.Info("Получен отчет", "user", username, "chat_id", chatID, "text", reportText, "reportTime", reportTime)
-
 		uuidStr := uuid.New().String()
 
 		//Запись в таблицу "Документы"
@@ -148,8 +145,14 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 			return
 		}
 
-		slog.Info("successfully saved new report", "documentID", uuidStr)
+		slog.Info("successfully saved new report in notion", "documentID", uuidStr)
 
+		//Сразу синхронизируем бд
+		if err := helpers.TriggerSyncReports(); err != nil {
+			slog.Error("failed to synchronize reports after insertion", "error", err)
+			return
+		}
+		slog.Info("successfully synchronized new report in postgres", "documentID", uuidStr)
 	}
 }
 

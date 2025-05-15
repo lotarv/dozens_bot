@@ -3,6 +3,8 @@ import MainView from '../views/MainView.vue'
 import MembersView from '../views/MembersView.vue'
 import MemberProfileView from '@/views/MemberProfileView.vue'
 import RulesView from '@/views/RulesView.vue'
+import ReportsView from '@/views/ReportsView.vue'
+import ReportView from '@/views/ReportView.vue'
 const routes = [
     {
         path: '/',
@@ -24,6 +26,16 @@ const routes = [
         path:"/rules",
         name:"rules",
         component: RulesView
+    },
+    {
+        path:"/reports",
+        name:"reports",
+        component: ReportsView
+    },
+    {
+        path:"/report/:username/:id",
+        name:"report",
+        component: ReportView
     }
 ]
 

@@ -32,7 +32,7 @@ func (r *DocumentsRepository) GetRawReports(username string) ([]types.Report, er
 	}
 
 	var reports []types.Report
-	err = r.db.Select(&reports, "SELECT * FROM reports WHERE author_notion_id = $1", member_notion_id)
+	err = r.db.Select(&reports, "SELECT * FROM reports WHERE author_notion_id = $1 ORDER BY creation_date DESC", member_notion_id)
 	if err != nil {
 		return nil, err
 	}

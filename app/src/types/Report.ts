@@ -1,3 +1,4 @@
 export interface Report {
-    date: string
+    creation_date: string,
+    text: string,
 }
