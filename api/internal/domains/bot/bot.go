@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/repository"
 	"github.com/lotarv/dozens_bot/internal/storage"
+	"github.com/lotarv/dozens_bot/internal/utils"
 )
 
 type BotController struct {
@@ -50,6 +52,8 @@ func NewBotController(storage *storage.Storage) *BotController {
 		slog.Error("NOTION_REPORTS_DATABASE_ID is not set")
 		panic("NOTION_REPORTS_DATABASE_ID is not set")
 	}
+
+	http.DefaultClient = utils.GetHTTPClient()
 
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
