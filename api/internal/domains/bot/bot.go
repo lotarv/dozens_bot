@@ -110,44 +110,52 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 		reportTime := time.Unix(int64(message.Date), 0).Format("02/01/2006")
 		uuidStr := uuid.New().String()
 
-		//Запись в таблицу "Документы"
+		slog.Info("Creating new report", "username", username, "uuid", uuidStr, "reportTime", reportTime)
+		slog.Info("Using Notion API token prefix", "prefix", os.Getenv("NOTION_API_TOKEN")[:6])
+		slog.Info("Using Notion database ID", "documentsDBID", c.documentsDBID, "reportsDBID", c.reportsDBID)
+
+		// Создание документа в Notion
 		err := c.createDocumentInNotion(context.Background(), uuidStr, reportText)
 		if err != nil {
-			slog.Error("failed to save document in notion", "error", err)
+			slog.Error("failed to save document in notion", "uuid", uuidStr, "chat_id", chatID, "error", err)
+			return
 		} else {
-			slog.Info("new document was saved in notion")
+			slog.Info("new document was saved in notion", "uuid", uuidStr)
 		}
 
-		//Сразу синхронизируем бд
+		// Синхронизация
 		if err := helpers.TriggerSyncDocuments(); err != nil {
 			slog.Error("failed to synchronize documents after insertion", "error", err)
 			return
 		}
+		slog.Info("documents sync triggered")
 
-		//Получаем notion_id документа после синхронизации
-
+		// Получение notion_id документа
+		slog.Info("Looking up document notion ID after sync", "uuid", uuidStr)
 		document_notion_id, err := c.repo.GetDocumentNotionId(uuidStr)
 		if err != nil {
-			slog.Error("failed to get document notion id", "error", err)
+			slog.Error("failed to get document notion id", "uuid", uuidStr, "error", err)
 			return
 		}
+		slog.Info("got document notion id", "notion_id", document_notion_id)
 
+		// Получение ID автора
 		author_notion_id, err := c.repo.GetMemberNotionId("incetro")
 		if err != nil {
 			slog.Error("failed to get member notion id", "error", err)
 			return
 		}
+		slog.Info("got author notion id", "author_notion_id", author_notion_id)
 
-		//Создаем запись в таблице с отчетами
-
+		// Создание отчета
+		slog.Info("Creating report in Notion", "documentNotionID", document_notion_id, "authorNotionID", author_notion_id, "date", reportTime)
 		if err := c.createReportInNotion(context.Background(), document_notion_id, author_notion_id, reportTime); err != nil {
 			slog.Error("failed to save report in notion", "error", err)
 			return
 		}
-
 		slog.Info("successfully saved new report in notion", "documentID", uuidStr)
 
-		//Сразу синхронизируем бд
+		// Синхронизация отчётов
 		if err := helpers.TriggerSyncReports(); err != nil {
 			slog.Error("failed to synchronize reports after insertion", "error", err)
 			return
