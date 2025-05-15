@@ -58,12 +58,12 @@ func (r *NotionSyncRepository) SyncDeclarationsWithNotion(declarations []documen
 
 func (r *NotionSyncRepository) SyncReportsWithNotion(reports []document_types.Report) error {
 	query := `
-	INSERT INTO reports (id, author_notion_id, creation_date)
-	VALUES ($1, $2, $3)
+	INSERT INTO reports (id, document_id, author_notion_id, creation_date)
+	VALUES ($1, $2, $3, $4)
 	ON CONFLICT(id) DO NOTHING`
 
 	for _, report := range reports {
-		_, err := r.db.Exec(query, report.ID, report.AuthorNotionID, report.CreationDate)
+		_, err := r.db.Exec(query, report.ID, report.DocumentID, report.AuthorNotionID, report.CreationDate)
 		if err != nil {
 			slog.Error("failed to synchronize report", "report_id", report.ID, "error", err)
 			continue

@@ -352,6 +352,10 @@ func fetchReportsFromNotion() ([]document_types.Report, error) {
 			ID: page.ID,
 		}
 
+		// Получаем relation на документ
+		if len(page.Properties.ReportID.Relation) > 0 {
+			report.DocumentID = page.Properties.ReportID.Relation[0].ID
+		}
 		// Извлекаем ID автора (берем первый элемент relation)
 		if len(page.Properties.Author.Relation) > 0 {
 			report.AuthorNotionID = page.Properties.Author.Relation[0].ID
