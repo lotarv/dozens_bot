@@ -53,7 +53,7 @@ export default defineComponent({
   @apply text-base text-gray-700 leading-7 mb-4;
 }
 .markdown-content :deep(li) {
-  @apply text-base text-gray-700 leading-7 mb-2 list-disc list-outside ml-6;
+  @apply text-base text-gray-700 leading-7 mb-2 list-disc list-outside;
 }
 .markdown-content :deep(code) {
   @apply bg-gray-100 px-1 py-0.5 rounded text-sm text-gray-800;

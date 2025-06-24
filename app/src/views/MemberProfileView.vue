@@ -73,7 +73,7 @@ section {
 
 .member-name {
     font-family: "SF Pro Display";
-    @apply font-[500] text-4xl tracking-[-1px] leading-9
+    @apply font-[500] text-4xl tracking-[-1px] leading-9 pl-[9px]
 }
 .dot {
     @apply w-[4px] h-[4px] bg-black inline-block rounded-[50%] self-center

@@ -37,7 +37,7 @@ function goBack() {
             </div>
             <p class="flex-1 flex justify-between items-center"><span>Отчет</span> <span class="text-base">{{ formatDate(report.creation_date) }}</span></p>
         </div>
-        <div class="px-8">
+        <div class="px-2">
             <MarkDownComponent :text="report.text"></MarkDownComponent>
         </div>
     </section>

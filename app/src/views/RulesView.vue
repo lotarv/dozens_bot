@@ -41,7 +41,7 @@ onMounted(async () => {
             <span>Правила</span>
         </div>
         <div v-if="isLoading" class="loading"></div>
-        <div v-else class="px-8">
+        <div v-else class="px-3">
             <MarkDownComponent :text="rulesStr" />
         </div>
     </section>

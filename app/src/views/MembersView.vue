@@ -61,7 +61,7 @@ onBeforeMount(async () => {
 }
 
 .members-container{
-    @apply flex flex-col gap-1 justify-center align-top
+    @apply flex flex-col gap-1 justify-center align-top mb-5
 }
 
 .member-card{
