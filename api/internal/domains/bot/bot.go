@@ -146,9 +146,9 @@ func (c *BotController) handleIncomingMessage(message *tgbotapi.Message) {
 		slog.Info("got document notion id", "notion_id", document_notion_id)
 
 		// Получение ID автора
-		author_notion_id, err := c.repo.GetMemberNotionId("incetro")
+		author_notion_id, err := c.repo.GetMemberNotionId(username)
 		if err != nil {
-			slog.Error("failed to get member notion id", "error", err)
+			slog.Error("failed to get member notion id", "error", err, "username", username)
 			return
 		}
 		slog.Info("got author notion id", "author_notion_id", author_notion_id)
