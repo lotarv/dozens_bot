@@ -23,7 +23,7 @@ func (r *NotionSyncRepository) SyncMembersWithNotion(members []member_types.Memb
 	query := `
 	INSERT INTO members (fio, avatar_url, niche, annual_income, username, notion_database_id)
 	VALUES ($1,$2,$3,$4,$5,$6)
-	ON CONFLICT (username) DO UPDATE
+	ON CONFLICT (notion_database_id) DO UPDATE
 	SET fio = EXCLUDED.fio,
 		avatar_url = EXCLUDED.avatar_url,
 		niche = EXCLUDED.niche,
