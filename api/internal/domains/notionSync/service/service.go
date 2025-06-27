@@ -276,7 +276,21 @@ func fetchMembersFromNotion() ([]member_types.Member, error) {
 
 		// Извлекаем Фото (берем URL первого файла, если есть)
 		if len(page.Properties.AvatarUrl.Files) > 0 {
-			member.AvatarUrl = page.Properties.AvatarUrl.Files[0].File.URL
+			notionURL := page.Properties.AvatarUrl.Files[0].File.URL
+
+			if page.Properties.Username.URL != "" {
+				username := member.Username
+				filename := fmt.Sprintf("member_%s.jpg", username)
+				localPath := "/static/members/" + filename
+				publicPath := "/static/members/" + filename
+
+				err := utils.DownloadImage(notionURL, localPath)
+				if err != nil {
+					slog.Error("failed to download image", "url", notionURL, "error", err)
+				} else {
+					member.AvatarUrl = publicPath
+				}
+			}
 		}
 
 		members = append(members, member)

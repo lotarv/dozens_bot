@@ -7,6 +7,7 @@ services:
       - ./api:/app
       - .env:/app/.env
       - ./api/migrations:/app/migrations
+      - ./static:/static
     ports:
       - 3001:3001
     command: go run cmd/main.go
@@ -47,6 +48,7 @@ services:
       - 80:80
     volumes:
       - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf
+      - ./static:/static
     depends_on:
       - api
       - app

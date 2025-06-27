@@ -7,6 +7,7 @@ services:
       - ./api:/app
       - .env:/app/.env
       - ./api/migrations:/app/migrations
+      - ./static:/static
     ports:
       - 3001:3001
     command: go run cmd/main.go
@@ -47,6 +48,7 @@ services:
     volumes:
       - ./nginx/nginx-prod.conf:/etc/nginx/nginx.conf
       - ./app/dist:/usr/share/nginx/html
+      - ./static:/static
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:

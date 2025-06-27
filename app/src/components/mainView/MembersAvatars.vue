@@ -9,33 +9,6 @@ const props = defineProps<{
 const displayedMembers = computed(() => props.members.slice(0, 9));
 const extraCount = computed(() => props.members.length > 10 ? props.members.length - 9 : 0)
 
-const areImagesLoaded = ref(false); 
-const preloadImages = async () => {
-  const imagePromises = displayedMembers.value.map((member) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.src = member.avatar_url;
-      img.onload = resolve;
-      img.onerror = reject;
-    });
-  });
-
-  try {
-    await Promise.all(imagePromises); 
-    areImagesLoaded.value = true; 
-  } catch (error) {
-    console.error('Ошибка загрузки изображений:', error);
-    areImagesLoaded.value = true; 
-  }
-};
-
-// Запускаем загрузку при монтировании
-onMounted(() => {
-  preloadImages();
-});
-preloadImages();
-
-
 </script>
 
 <template>
