@@ -11,4 +11,14 @@ export class DozensTransport {
             return []
         }
     }
+    static async GetDeclarationByID(id: string): Promise<DeclarationDocument | null> {
+        try {
+            const {data} = await api.get<DeclarationDocument>(`/declaration/${id}`)
+            console.log("REPOSITORY: ", data)
+            return data
+        } catch(error) {
+            console.error("failed to get declarations: ", error)
+            return null
+        }
+    }
 }

@@ -13,6 +13,7 @@ type service interface {
 	GetRules() (types.Document, error)
 	GetReports(username string) (*types.ReportsResponse, error)
 	GetDeclarations(username string) ([]types.DeclarationDocument, error)
+	GetDeclarationByID(id string) (*types.DeclarationDocument, error)
 }
 
 type DocumentsTransport struct {
@@ -31,6 +32,7 @@ func (t *DocumentsTransport) RegisterRoutes() {
 	t.router.Get("/api/rules", t.getRules)
 	t.router.Get("/api/reports/{username}", t.getReports)
 	t.router.Get("/api/declarations/{username}", t.getDeclarations)
+	t.router.Get("/api/declaration/{id}", t.getDeclaration)
 }
 
 func (t *DocumentsTransport) getRules(w http.ResponseWriter, r *http.Request) {
@@ -76,4 +78,17 @@ func (t *DocumentsTransport) getDeclarations(w http.ResponseWriter, r *http.Requ
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(declarations)
+}
+
+func (t *DocumentsTransport) getDeclaration(w http.ResponseWriter, r *http.Request) {
+	declarationID := chi.URLParam(r, "id")
+
+	declaration, err := t.service.GetDeclarationByID(declarationID)
+	if err != nil {
+		http.Error(w, "failed to get declaration by id", http.StatusInternalServerError)
+		slog.Error("failed to get declaration by id", "declarationID", declarationID, "error", err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(declaration)
 }

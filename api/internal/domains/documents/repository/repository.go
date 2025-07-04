@@ -105,7 +105,8 @@ func (r *DocumentsRepository) GetDeclarations(username string) ([]types.Declarat
 		docs.text,
 		dec.creation_date,
 		dec.end_date,
-		dec.status
+		dec.status,
+		dec.id
 	FROM declarations dec
 	JOIN documents docs ON dec.document_id = docs.document_notion_id
 	JOIN members m ON dec.author_notion_id = m.notion_database_id
@@ -117,4 +118,27 @@ func (r *DocumentsRepository) GetDeclarations(username string) ([]types.Declarat
 		return nil, err
 	}
 	return declarations, nil
+}
+
+func (r *DocumentsRepository) GetDeclarationByID(id string) (*types.DeclarationDocument, error) {
+	var declaration types.DeclarationDocument
+
+	query := `
+	SELECT
+		docs.text,
+		dec.creation_date,
+		dec.end_date,
+		dec.status,
+		dec.id
+	FROM declarations dec
+	JOIN documents docs ON dec.document_id = docs.document_notion_id
+	WHERE dec.id = $1
+	LIMIT 1
+	`
+
+	err := r.db.Get(&declaration, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return &declaration, nil
 }

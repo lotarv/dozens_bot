@@ -8,14 +8,18 @@ import TimeIcon from '@/components/icons/TimeIcon.vue';
 import { DeclarationDocument } from '../entities/DeclarationDocument';
 import { DeclarationStatus } from '../lib/constants';
 import { decl } from 'postcss';
+import { useRouter } from 'vue-router';
+import { Member } from '@/types/Member';
 const props = defineProps<{
     declarations: DeclarationDocument[],
+    member: Member
 }>()
+const router = useRouter()
 
 function formatDate(dateStr:string) {
     const date = new Date(dateStr)
-    const day = date.getUTCDate();
-    const month = date.getMonth() + 1
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0")
     const year = date.getFullYear();
 
     return `${day}.${month}.${year}`
@@ -64,8 +68,8 @@ function getStatusText(declaration:DeclarationDocument) {
     return "Прошлая"
 }
 
-function openDeclaration() {
-    
+function openDeclaration(declaration: DeclarationDocument) {
+    router.push(`/declaration/${props.member.username}/${declaration.id}`)
 }
 
 </script>
@@ -79,7 +83,7 @@ function openDeclaration() {
         v-for="declaration in declarations"
         :key="declaration.end_date"
         :style="{ backgroundColor: getBgColor(declaration) }"
-        @click="openDeclaration"
+        @click="() => openDeclaration(declaration)"
       >
         <div class="info" :class="declarationStatus(declaration)" :style="{color: declarationStatus(declaration) == 'progress'? 'white': 'black'}">
           <component class="icon" :is="getIcon(declaration)" :style="{color: getBgColor(declaration)}" />

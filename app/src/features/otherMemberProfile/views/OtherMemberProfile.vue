@@ -54,7 +54,7 @@ onBeforeMount(async () => {
         </div>
         <div class="documents" v-if="loaded">
             <div class="declarations-container">
-                <Declarations :declarations="declarations"/>
+                <Declarations :declarations="declarations" :member="member"/>
             </div>
             <div class="reports-container">
                 <Reports v-if="reportsStore.reports[username]" :reports="reportsStore.reports[username].reports ?? []" :username="username" />

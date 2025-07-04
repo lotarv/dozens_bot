@@ -36,6 +36,11 @@ const routes = [
         path:"/report/:username/:id",
         name:"report",
         component: ReportView
+    },
+    {
+        path:"/declaration/:username/:id",
+        name:"declaration",
+        component: () => import('../features/otherMemberProfile/views/DeclarationView.vue')
     }
 ]
 
