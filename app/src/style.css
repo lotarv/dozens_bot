@@ -11,13 +11,11 @@ html,body{
     background-color: #EBEBEB;
     font-family: 'SF Pro Display', Roboto, emoji, sans-serif;
     overscroll-behavior-y: none;
-    width:100%;
-    min-height:100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: darkscale;
     text-rendering: optimizeLegibility;
-    /* position: fixed; */
-    /* overflow: hidden; */
+    height: 100lvh;
+    overflow: hidden;
 }
 
 #app {

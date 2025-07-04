@@ -3,7 +3,3 @@ export interface Declaration{
     threat: number,
     date: string,
 }
-
-export interface DeclarationDocument {
-    
-}

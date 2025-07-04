@@ -3,24 +3,32 @@ import { useRoute } from 'vue-router'
 import { useMembersStore } from '@/stores/membersStore'
 import { Member } from '@/types/Member'
 import ArrowLeft from '@/components/icons/ArrowLeft.vue'
-import { declarations } from '@/mocks/declarations'
-import DeclarationsComponent from '@/components/memberProfileView/DeclarationsComponent.vue'
-import ReportsComponent from '@/components/memberProfileView/ReportsComponent.vue'
+import Reports from '../ui/Reports.vue'
+import Declarations from '../ui/Declarations.vue'
 import { useReportsStore } from '@/stores/reportsStore'
 import { useUserStore } from '@/stores/user'
-import { onBeforeMount } from 'vue'
+import { onBeforeMount, ref } from 'vue'
+import { DeclarationDocument } from '../entities/DeclarationDocument'
+import { DozensTransport } from '@/repository/http'
 const route = useRoute()
 const membersStore = useMembersStore()
 const username = route.params.username.toString()
 
+
+const loaded = ref<boolean>(false)
 const reportsStore = useReportsStore()
 const userStore = useUserStore()
 
+const declarations = ref<DeclarationDocument[]>([])
 
 const member: Member = membersStore.getMemberByUsername(username)
 
+
+
 onBeforeMount(async () => {
-    reportsStore.fetchUserReports(username)
+    await reportsStore.fetchUserReports(username)
+    declarations.value = await DozensTransport.GetDeclarations(username)
+    loaded.value = true
 })
 </script>
 <template>
@@ -44,11 +52,13 @@ onBeforeMount(async () => {
                 {{ member.fio }}
             </div>
         </div>
-        <div class="declarations-container">
-            <DeclarationsComponent :declarations="declarations"/>
-        </div>
-        <div class="reports-container">
-            <ReportsComponent v-if="reportsStore.reports[username]" :reports="reportsStore.reports[username].reports ?? []" :username="username" />
+        <div class="documents" v-if="loaded">
+            <div class="declarations-container">
+                <Declarations :declarations="declarations"/>
+            </div>
+            <div class="reports-container">
+                <Reports v-if="reportsStore.reports[username]" :reports="reportsStore.reports[username].reports ?? []" :username="username" />
+            </div>
         </div>
     </section>
 </template>

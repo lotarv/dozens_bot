@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { Report } from '@/types/Report';
-import ArrowIcon from '../icons/ArrowIcon.vue';
+import ArrowIcon from '@/components/icons/ArrowIcon.vue';
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router';
 const props = defineProps<{

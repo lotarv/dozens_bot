@@ -44,7 +44,11 @@ func (r *NotionSyncRepository) SyncDeclarationsWithNotion(declarations []documen
 	query := `
 		INSERT INTO declarations (id, author_notion_id, document_id, creation_date, end_date, status)
 		VALUES ($1, $2, $3, $4, $5, $6)
-		ON CONFLICT (id) DO NOTHING
+		ON CONFLICT (id) DO UPDATE
+		SET
+			status = EXCLUDED.status,
+			end_date = EXCLUDED.end_date,
+			creation_date = EXCLUDED.creation_date
 	`
 	for _, declaration := range declarations {
 		_, err := r.db.Exec(query,

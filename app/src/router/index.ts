@@ -1,10 +1,10 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import MainView from '../views/MainView.vue'
 import MembersView from '../views/MembersView.vue'
-import MemberProfileView from '@/views/MemberProfileView.vue'
 import RulesView from '@/views/RulesView.vue'
 import ReportsView from '@/views/ReportsView.vue'
 import ReportView from '@/views/ReportView.vue'
+import OtherMemberProfile from '@/features/otherMemberProfile/views/OtherMemberProfile.vue'
 const routes = [
     {
         path: '/',
@@ -18,8 +18,8 @@ const routes = [
     },
     {
         path: '/member/:username',
-        name: "declaration",
-        component: MemberProfileView,
+        name: "member",
+        component:OtherMemberProfile,
         props:true
     },
     {
