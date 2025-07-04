@@ -124,6 +124,7 @@ func fetchDeclarationsFromNotion() ([]document_types.Declaration, error) {
 	// Парсим JSON деклараций
 	var declResult struct {
 		Results []struct {
+			ID         string `json:"id"`
 			Properties struct {
 				CreationDate struct {
 					Date struct {
@@ -162,11 +163,13 @@ func fetchDeclarationsFromNotion() ([]document_types.Declaration, error) {
 		}
 
 		// Извлекаем ID (UUID как строка)
+		declaration.ID = page.ID
+
 		if len(page.Properties.ID.Relation) > 0 {
-			declaration.ID = page.Properties.ID.Relation[0].ID
+			declaration.DocumentID = page.Properties.ID.Relation[0].ID
 		} else {
 			slog.Warn("ID relation not found", "index", i)
-			declaration.ID = ""
+			declaration.DocumentID = ""
 		}
 
 		// Извлекаем AuthorNotionID

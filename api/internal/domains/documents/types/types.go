@@ -2,6 +2,7 @@ package types
 
 type Declaration struct {
 	ID             string `json:"id"`
+	DocumentID     string `json:"document_id" db:"document_id"`
 	AuthorNotionID string `json:"author_notion_id"`
 	CreationDate   string `json:"creation_date"`
 	EndDate        string `json:"end_date"`
@@ -29,4 +30,10 @@ type ReportsResponse struct {
 	Username  string       `json:"username"`
 	AvatarUrl string       `json:"avatar_url"`
 	Reports   []ReportItem `json:"reports"`
+}
+
+type DeclarationDocument struct {
+	Text         string `json:"text"`
+	EndDate      string `json:"end_date"`
+	CreationDate string `json:"creation_date"`
 }

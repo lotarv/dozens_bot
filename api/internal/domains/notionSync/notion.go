@@ -19,6 +19,8 @@ func NewNotionSyncController(router *chi.Mux, storage *storage.Storage) *NotionS
 	service := service.New(repo)
 	transport := transport.New(router, service)
 
+	service.SyncDeclarationsWithNotion()
+
 	return &NotionSyncController{
 		repo:      repo,
 		service:   service,
