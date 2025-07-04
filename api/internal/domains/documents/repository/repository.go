@@ -104,7 +104,8 @@ func (r *DocumentsRepository) GetDeclarations(username string) ([]types.Declarat
 	SELECT
 		docs.text,
 		dec.creation_date,
-		dec.end_date
+		dec.end_date,
+		dec.status
 	FROM declarations dec
 	JOIN documents docs ON dec.document_id = docs.document_notion_id
 	JOIN members m ON dec.author_notion_id = m.notion_database_id

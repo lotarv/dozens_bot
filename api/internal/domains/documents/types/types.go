@@ -6,6 +6,7 @@ type Declaration struct {
 	AuthorNotionID string `json:"author_notion_id"`
 	CreationDate   string `json:"creation_date"`
 	EndDate        string `json:"end_date"`
+	Status         string `json:"status"`
 }
 
 type Report struct {
@@ -36,4 +37,5 @@ type DeclarationDocument struct {
 	Text         string `json:"text" db:"text"`
 	EndDate      string `json:"end_date" db:"end_date"`
 	CreationDate string `json:"creation_date" db:"creation_date"`
+	Status       string `json:"status" db:"status"`
 }

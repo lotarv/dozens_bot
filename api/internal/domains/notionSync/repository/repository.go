@@ -42,8 +42,8 @@ func (r *NotionSyncRepository) SyncMembersWithNotion(members []member_types.Memb
 
 func (r *NotionSyncRepository) SyncDeclarationsWithNotion(declarations []document_types.Declaration) error {
 	query := `
-		INSERT INTO declarations (id, author_notion_id, document_id, creation_date, end_date)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO declarations (id, author_notion_id, document_id, creation_date, end_date, status)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (id) DO NOTHING
 	`
 	for _, declaration := range declarations {
@@ -52,7 +52,8 @@ func (r *NotionSyncRepository) SyncDeclarationsWithNotion(declarations []documen
 			declaration.AuthorNotionID,
 			declaration.DocumentID,
 			declaration.CreationDate,
-			declaration.EndDate)
+			declaration.EndDate,
+			declaration.Status)
 		if err != nil {
 			slog.Error("failed to synchronize declaration: ", "declaration_id", declaration.ID, "author", declaration.AuthorNotionID, "error", err)
 			continue

@@ -146,6 +146,11 @@ func fetchDeclarationsFromNotion() ([]document_types.Declaration, error) {
 						ID string `json:"id"`
 					} `json:"relation"`
 				} `json:"ID"`
+				Status struct {
+					Status struct {
+						Name string `json:"name"`
+					} `json:"status"`
+				} `json:"Статус"`
 			} `json:"properties"`
 		} `json:"results"`
 	}
@@ -178,6 +183,11 @@ func fetchDeclarationsFromNotion() ([]document_types.Declaration, error) {
 		} else {
 			slog.Warn("Author relation not found", "index", i)
 			declaration.AuthorNotionID = ""
+		}
+
+		//Извлекаем статус
+		if page.Properties.Status.Status.Name != "" {
+			declaration.Status = page.Properties.Status.Status.Name
 		}
 
 		declarations = append(declarations, declaration)
