@@ -18,6 +18,7 @@ func NewDocumentsController(router *chi.Mux, db *storage.Storage) *DocumentsCont
 	repo := repository.New(db.DB())
 	service := service.New(repo)
 	transport := transport.New(router, service)
+
 	return &DocumentsController{
 		repo:      repo,
 		service:   service,

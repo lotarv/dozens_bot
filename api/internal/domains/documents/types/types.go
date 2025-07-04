@@ -33,7 +33,7 @@ type ReportsResponse struct {
 }
 
 type DeclarationDocument struct {
-	Text         string `json:"text"`
-	EndDate      string `json:"end_date"`
-	CreationDate string `json:"creation_date"`
+	Text         string `json:"text" db:"text"`
+	EndDate      string `json:"end_date" db:"end_date"`
+	CreationDate string `json:"creation_date" db:"creation_date"`
 }

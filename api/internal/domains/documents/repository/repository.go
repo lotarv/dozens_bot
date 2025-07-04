@@ -96,3 +96,24 @@ func (r *DocumentsRepository) GetReportDocuments(reports []types.Report) (map[st
 
 	return documents, nil
 }
+
+func (r *DocumentsRepository) GetDeclarations(username string) ([]types.DeclarationDocument, error) {
+	var declarations []types.DeclarationDocument
+
+	query := `
+	SELECT
+		docs.text,
+		dec.creation_date,
+		dec.end_date
+	FROM declarations dec
+	JOIN documents docs ON dec.document_id = docs.document_notion_id
+	JOIN members m ON dec.author_notion_id = m.notion_database_id
+	WHERE m.username=$1
+	ORDER BY dec.creation_date DESC
+	`
+	err := r.db.Select(&declarations, query, username)
+	if err != nil {
+		return nil, err
+	}
+	return declarations, nil
+}

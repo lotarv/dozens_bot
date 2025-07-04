@@ -12,6 +12,7 @@ import (
 type service interface {
 	GetRules() (types.Document, error)
 	GetReports(username string) (*types.ReportsResponse, error)
+	GetDeclarations(username string) ([]types.DeclarationDocument, error)
 }
 
 type DocumentsTransport struct {
@@ -29,6 +30,7 @@ func New(router *chi.Mux, service service) *DocumentsTransport {
 func (t *DocumentsTransport) RegisterRoutes() {
 	t.router.Get("/api/rules", t.getRules)
 	t.router.Get("/api/reports/{username}", t.getReports)
+	t.router.Get("/api/declarations/{username}", t.getDeclarations)
 }
 
 func (t *DocumentsTransport) getRules(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +58,22 @@ func (t *DocumentsTransport) getReports(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		http.Error(w, "failed to fetch reports", http.StatusInternalServerError)
 		slog.Error("failed to fetch reports", "error", err)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(reports)
+}
+
+func (t *DocumentsTransport) getDeclarations(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+	declarations, err := t.service.GetDeclarations(username)
+	if err != nil {
+		http.Error(w, "failed to fetch reports", http.StatusInternalServerError)
+		slog.Error("failed to fetch reports", "error", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(declarations)
 }

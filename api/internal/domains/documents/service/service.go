@@ -11,6 +11,7 @@ type repository interface {
 	GetRawReports(username string) ([]types.Report, error)
 	GetUserAvatarUrl(username string) (string, error)
 	GetReportDocuments(reportsRaw []types.Report) (map[string]types.Document, error)
+	GetDeclarations(username string) ([]types.DeclarationDocument, error)
 }
 
 type DocumentsService struct {
@@ -63,5 +64,8 @@ func (s *DocumentsService) GetReports(username string) (*types.ReportsResponse, 
 	}
 
 	return response, nil
+}
 
+func (s *DocumentsService) GetDeclarations(username string) ([]types.DeclarationDocument, error) {
+	return s.repo.GetDeclarations(username)
 }
