@@ -17,6 +17,10 @@ type repository interface {
 	GetDocumentsAmount() (int, error)
 	GetDocumentNotionId(db_uuid string) (string, error)
 	GetMemberNotionId(username string) (string, error)
+	GetDozenByCode(code string) (int, error)
+	ResetUserState(userID int64) error
+	SetUserState(userID int64, state string) error
+	GetUserState(userID int64) (string, error)
 }
 
 type BotService struct {
@@ -24,6 +28,7 @@ type BotService struct {
 	bot          *tgbotapi.BotAPI
 	notionClient *notionapi.Client
 	notionConfig bot_types.NotionConfig
+	userStates   map[int64]bot_types.UserState
 }
 
 func New(repo repository, bot *tgbotapi.BotAPI, notionClient *notionapi.Client, config bot_types.NotionConfig) *BotService {
@@ -33,6 +38,7 @@ func New(repo repository, bot *tgbotapi.BotAPI, notionClient *notionapi.Client, 
 		bot:          bot,
 		notionClient: notionClient,
 		notionConfig: config,
+		userStates:   make(map[int64]bot_types.UserState),
 	}
 }
 
@@ -53,7 +59,25 @@ func (s *BotService) Run() {
 }
 
 func (s *BotService) handleMessage(msg *tgbotapi.Message) {
-	text := strings.ToLower(msg.Text)
+	chatID := msg.Chat.ID
+	userID := msg.From.ID
+	text := strings.TrimSpace(msg.Text)
+
+	//1.Проверяем текущее состояние пользователя
+	state, err := s.repo.GetUserState(userID)
+	if err != nil {
+		slog.Error("Failed to get user state", "user_id", userID, "err", err)
+		s.bot.Send(tgbotapi.NewMessage(chatID, "Произошла ошибка. Попробуйте позже."))
+		return
+	}
+
+	switch state {
+	case "join_enter_code":
+		s.handleJoinCodeInput(userID, chatID, text)
+		return
+	}
+
+	//2.Общие команды
 
 	switch {
 	case text == "/start":
@@ -66,17 +90,52 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 }
 
 func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
-	slog.Info("Callback data", "cb", cb.Data)
+	chatID := cb.Message.Chat.ID
+	userID := cb.From.ID
+	_, _ = s.bot.Request(tgbotapi.NewCallback(cb.ID, "")) //Убираем loading в UI
 
-	callback := tgbotapi.NewCallback(cb.ID, "")
-	s.bot.Request(callback)
+	// Удаляем inline-кнопки
+	s.bot.Send(tgbotapi.NewEditMessageReplyMarkup(
+		chatID,
+		cb.Message.MessageID,
+		tgbotapi.InlineKeyboardMarkup{InlineKeyboard: [][]tgbotapi.InlineKeyboardButton{}},
+	))
+
+	switch cb.Data {
+	case "create_dozen":
+		s.createDozen(userID)
+	case "join_dozen":
+		s.joinDozen(userID)
+	default:
+		s.bot.Send(tgbotapi.NewMessage(chatID, "Неизвестное действие"))
+	}
+}
+
+func (s *BotService) createDozen(userID int64) {
+	s.bot.Send(tgbotapi.NewMessage(userID, "Введите название вашей десятки:"))
+}
+
+func (s *BotService) joinDozen(userID int64) {
+	s.bot.Send(tgbotapi.NewMessage(userID, "Введите код десятки, к которой хотите присоединиться:"))
+	err := s.repo.SetUserState(userID, "join_enter_code")
+	if err != nil {
+		slog.Error("Failed to set user state", "chat_id", userID, "err", err)
+	}
 }
 
 func (s *BotService) handleStart(msg *tgbotapi.Message) {
 	chatID := msg.Chat.ID
-	text := "Привет! Пока я не знаю, в какой ты десятке 😅"
-	message := tgbotapi.NewMessage(chatID, text)
-	s.bot.Send(message)
+	text := "Добро пожаловать! Выберите действие:"
+	btns := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("🔗 Присоединиться к десятке", "join_dozen"),
+			tgbotapi.NewInlineKeyboardButtonData("✨ Создать десятку", "create_dozen"),
+		),
+	)
+	msgOut := tgbotapi.NewMessage(chatID, text)
+	msgOut.ReplyMarkup = btns
+
+	s.bot.Send(msgOut)
 }
 
 func (s *BotService) handleReport(msg *tgbotapi.Message) {
@@ -213,4 +272,23 @@ func (s *BotService) createReport(documentID, authorID, date string) error {
 
 	_, err := s.notionClient.Page.Create(context.Background(), page)
 	return err
+}
+
+func (s *BotService) handleJoinCodeInput(userID int64, chatID int64, code string) {
+	code = strings.ToLower(strings.TrimSpace(code))
+	dozenID, err := s.repo.GetDozenByCode(code)
+	if err != nil || dozenID == 0 {
+		slog.Warn("Invalid dozen code", "code", code, "err", err)
+		s.bot.Send(tgbotapi.NewMessage(chatID, "Код десятки не найден. Проверьте правильность и попробуйте снова"))
+		return
+	}
+
+	slog.Info("got dozen id", "dozenID", dozenID)
+
+	s.bot.Send(tgbotapi.NewMessage(chatID, "Код принят! Введите ваше имя:"))
+
+	if err := s.repo.SetUserState(userID, "join_enter_name"); err != nil {
+		slog.Error("failed to set user state", "user_id", userID, "err", err)
+	}
+
 }

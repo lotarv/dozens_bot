@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/lotarv/dozens_bot/internal/storage"
 )
@@ -40,4 +42,38 @@ func (r *BotRepository) GetMemberNotionId(username string) (string, error) {
 		return "", err
 	}
 	return author_notion_id, nil
+}
+
+func (r *BotRepository) GetUserState(userID int64) (string, error) {
+	var state string
+	err := r.db.QueryRow(`SELECT current_state FROM user_state WHERE telegram_id = $1`, userID).Scan(&state)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	return state, err
+}
+
+func (r *BotRepository) SetUserState(userID int64, state string) error {
+	_, err := r.db.Exec(`
+		INSERT INTO user_state (telegram_id, current_state, updated_at)
+		VALUES ($1, $2, now())
+		ON CONFLICT (telegram_id) DO UPDATE
+		SET current_state = EXCLUDED.current_state,
+			updated_at = EXCLUDED.updated_at
+	`, userID, state)
+	return err
+}
+
+func (r *BotRepository) ResetUserState(userID int64) error {
+	_, err := r.db.Exec(`DELETE FROM user_state WHERE telegram_id = $1`, userID)
+	return err
+}
+
+func (r *BotRepository) GetDozenByCode(code string) (int, error) {
+	var dozenID int
+	err := r.db.QueryRow(`SELECT id FROM dozens WHERE code = $1`, code).Scan(&dozenID)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	return dozenID, err
 }
