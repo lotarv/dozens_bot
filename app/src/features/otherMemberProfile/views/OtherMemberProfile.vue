@@ -53,7 +53,7 @@ onBeforeMount(async () => {
             </div>
         </div>
         <div class="documents" v-if="loaded">
-            <div class="declarations-container">
+            <div class="declarations-container" v-if="declarations && declarations.length > 0">
                 <Declarations :declarations="declarations" :member="member"/>
             </div>
             <div class="reports-container">

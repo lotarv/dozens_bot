@@ -94,9 +94,6 @@ function openDeclaration(declaration: DeclarationDocument) {
           <ArrowIcon />
         </div>
       </div>
-      <div v-else class="empty-message">
-        <p>У этого участника еще нет деклараций</p>
-      </div>
     </div>
   </template>
 
