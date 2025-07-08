@@ -20,17 +20,22 @@ func New(storage *storage.Storage) *UsersRepository {
 }
 
 func (r *UsersRepository) CreateUser(ctx context.Context, user *types.User) error {
-	query := `INSERT INTO users (id, full_name, avatar_url, niche, annual_income)
-	VALUES (:id, :full_name, :avatar_url, :niche, :annual_income)`
+	query := `
+	INSERT INTO users (id, full_name, avatar_url, niche, annual_income)
+	VALUES (:id, :full_name, :avatar_url, :niche, :annual_income)
+	ON CONFLICT (id) DO UPDATE SET
+		full_name = EXCLUDED.full_name,
+		avatar_url = EXCLUDED.avatar_url,
+		niche = EXCLUDED.niche,
+		annual_income = EXCLUDED.annual_income
+	`
 
 	_, err := r.db.NamedExec(query, user)
-
 	if err != nil {
-		return fmt.Errorf("failed to create new user: %v", err)
+		return fmt.Errorf("failed to create/update user: %v", err)
 	}
 	return nil
 }
-
 func (r *UsersRepository) UpdateUser(ctx context.Context, user *types.User) error {
 	query := `
         UPDATE users

@@ -30,26 +30,30 @@ type repository interface {
 	UpdateUser(ctx context.Context, user *user_types.User) error
 	GetUserByID(ctx context.Context, userID int64) (*user_types.User, error)
 	AddUserToDozen(userID int64, dozenID int) error
+	CreateDozen(dozen bot_types.Dozen) error
+	GetUserDozen(userID int64) (bot_types.Dozen, error)
 }
 
 type BotService struct {
-	repo         repository
-	bot          *tgbotapi.BotAPI
-	notionClient *notionapi.Client
-	notionConfig bot_types.NotionConfig
-	user         user_types.User
-	dozen        bot_types.Dozen
+	repo            repository
+	bot             *tgbotapi.BotAPI
+	notionClient    *notionapi.Client
+	notionConfig    bot_types.NotionConfig
+	user            user_types.User
+	dozen           bot_types.Dozen
+	isCreatingDozen bool
 }
 
 func New(repo repository, bot *tgbotapi.BotAPI, notionClient *notionapi.Client, config bot_types.NotionConfig) *BotService {
 
 	return &BotService{
-		repo:         repo,
-		bot:          bot,
-		notionClient: notionClient,
-		notionConfig: config,
-		user:         user_types.User{},
-		dozen:        bot_types.Dozen{},
+		repo:            repo,
+		bot:             bot,
+		notionClient:    notionClient,
+		notionConfig:    config,
+		user:            user_types.User{},
+		dozen:           bot_types.Dozen{},
+		isCreatingDozen: false,
 	}
 }
 
@@ -95,6 +99,9 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 	case "join_enter_income":
 		s.handleIncomeInput(userID, text)
 		return
+	case "create_enter_name":
+		s.handleDozenNameInput(userID, text)
+		return
 	}
 
 	//2.Общие команды
@@ -123,7 +130,7 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 
 	switch cb.Data {
 	case "create_dozen":
-		s.createDozen(userID)
+		s.createDozen(cb.From, userID)
 	case "join_dozen":
 		s.joinDozen(userID)
 	case "join_enter_sphere":
@@ -134,20 +141,12 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 		s.handleJoinSuccess(userID)
 	case "join_reset":
 		s.handleJoinReset(userID)
+	case "create_change_name":
+		s.createDozen(cb.From, userID)
+	case "create_name_approve":
+		s.handleDozenNameApprove(userID)
 	default:
 		s.bot.Send(tgbotapi.NewMessage(chatID, "Неизвестное действие"))
-	}
-}
-
-func (s *BotService) createDozen(userID int64) {
-	s.bot.Send(tgbotapi.NewMessage(userID, "Введите название вашей десятки:"))
-}
-
-func (s *BotService) joinDozen(userID int64) {
-	s.bot.Send(tgbotapi.NewMessage(userID, "Введите код десятки, к которой хотите присоединиться:"))
-	err := s.repo.SetUserState(userID, "join_enter_code")
-	if err != nil {
-		slog.Error("Failed to set user state", "chat_id", userID, "err", err)
 	}
 }
 
@@ -155,14 +154,15 @@ func (s *BotService) handleStart(msg *tgbotapi.Message) {
 
 	s.dozen = bot_types.Dozen{}
 
-	user, err := s.repo.GetUserByID(context.Background(), msg.From.ID)
-	if err == nil && user != nil && user.ID != 0 {
-		s.user = *user
+	dozen, err := s.repo.GetUserDozen(msg.From.ID)
+	if err == nil {
+		s.dozen = dozen
 		s.handleStartRegistered(msg)
 		return
 	}
 
 	s.user = user_types.User{}
+	s.user.ID = msg.From.ID
 	chatID := msg.Chat.ID
 	text := "Добро пожаловать! Выберите действие:"
 	btns := tgbotapi.NewInlineKeyboardMarkup(
@@ -186,6 +186,79 @@ func (s *BotService) handleUnknown(msg *tgbotapi.Message) {
 	chatID := msg.Chat.ID
 	message := tgbotapi.NewMessage(chatID, "Команда не распознана. Используйте /start.")
 	s.bot.Send(message)
+}
+
+func (s *BotService) createDozen(usr *tgbotapi.User, userID int64) {
+	if s.user.FullName != "" {
+		s.bot.Send(tgbotapi.NewMessage(userID, "Введите название вашей десятки:"))
+		s.repo.SetUserState(userID, "create_enter_name")
+		return
+	}
+	s.isCreatingDozen = true
+	s.bot.Send(tgbotapi.NewMessage(userID, "Чтобы создать десятку, необходимо внести данные о капитане"))
+
+	btns := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("✅ Все верно", "join_enter_sphere"),
+			tgbotapi.NewInlineKeyboardButtonData("✏️ Изменить имя", "join_change_name"),
+		),
+	)
+
+	text := fmt.Sprintf("Ваше имя: %s", usr.FirstName+" "+usr.LastName)
+	msgOut := tgbotapi.NewMessage(userID, text)
+	msgOut.ReplyMarkup = btns
+
+	s.bot.Send(msgOut)
+}
+
+func (s *BotService) handleDozenNameInput(userID int64, dozen_name string) {
+	s.dozen.Name = dozen_name
+	text := fmt.Sprintf("Подтвердите название: %s", dozen_name)
+	btns := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("✅ Все верно", "create_name_approve"),
+			tgbotapi.NewInlineKeyboardButtonData("✏️ Внести заново", "create_change_name"),
+		),
+	)
+	msgOut := tgbotapi.NewMessage(userID, text)
+	msgOut.ReplyMarkup = btns
+
+	s.bot.Send(msgOut)
+}
+
+func (s *BotService) handleDozenNameApprove(userID int64) {
+	randomCode := helpers.GenerateRandomDozenCode()
+
+	s.dozen.Code = randomCode
+	s.dozen.Captain = userID
+
+	if err := s.repo.CreateDozen(s.dozen); err != nil {
+		slog.Error("failed to create dozen", "dozen", s.dozen, "error", err)
+		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось создать десятку. Попробуйте позже!"))
+		return
+	}
+
+	newDozen, _ := s.repo.GetDozenByCode(s.dozen.Code)
+
+	if err := s.repo.AddUserToDozen(s.dozen.Captain, newDozen.ID); err != nil {
+		slog.Error("failed to join dozen", "captainID", s.dozen.Captain, "error", err)
+		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось добавить Вас в десятку. Попробуйте зайти через кнопку присоедениться к десятке"))
+	}
+
+	text := fmt.Sprintf("Ваша десятка \"%s\" успешно создана!\nКод десятки: <code>%s</code>", s.dozen.Name, randomCode)
+	s.repo.DeleteUserState(userID)
+	msg := tgbotapi.NewMessage(userID, text)
+	msg.ParseMode = "HTML"
+	s.bot.Send(msg)
+
+}
+
+func (s *BotService) joinDozen(userID int64) {
+	s.bot.Send(tgbotapi.NewMessage(userID, "Введите код десятки, к которой хотите присоединиться:"))
+	err := s.repo.SetUserState(userID, "join_enter_code")
+	if err != nil {
+		slog.Error("Failed to set user state", "chat_id", userID, "err", err)
+	}
 }
 
 func (s *BotService) handleEnterSphere(usr *tgbotapi.User, userID int64) {
@@ -260,6 +333,14 @@ func (s *BotService) handleJoinCodeInput(msg *tgbotapi.Message, userID int64, ch
 	slog.Info("got dozen: ", "dozen", dozen)
 	s.dozen = dozen
 
+	//Если зарегистрированный пользователь хочет присоединиться к десятке,сразу перекидываем на шаг с подтверждением
+	user, err := s.repo.GetUserByID(context.Background(), msg.From.ID)
+	if err == nil {
+		s.user = *user
+		s.handleIncomeInput(msg.From.ID, strconv.FormatFloat(user.AnnualIncome, 'f', 1, 64))
+		return
+	}
+
 	btns := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("✅ Все верно", "join_enter_sphere"),
@@ -284,6 +365,13 @@ func (s *BotService) handleJoinSuccess(userID int64) {
 	if err := s.repo.CreateUser(context.Background(), &s.user); err != nil {
 		slog.Error("failed to create user", "error", err, "user", s.user)
 		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось создать пользователя. Попробуйте позже."))
+		return
+	}
+
+	if s.isCreatingDozen { //Выходим из ветки с присоединением, если пользователь создает десятку без регистрации
+		text := fmt.Sprintf(`Вы успешно зарегистрировались,  "%s". Переходим к созданию десятки`, s.user.FullName)
+		s.bot.Send(tgbotapi.NewMessage(userID, text))
+		s.createDozen(nil, userID)
 		return
 	}
 

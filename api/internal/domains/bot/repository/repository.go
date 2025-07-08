@@ -103,3 +103,26 @@ func (r *BotRepository) AddUserToDozen(userID int64, dozenID int) error {
 	_, err := r.db.Exec(query, dozenID, userID)
 	return err
 }
+
+func (r *BotRepository) CreateDozen(dozen bot_types.Dozen) error {
+	_, err := r.db.Exec("INSERT INTO dozens (code, name, captain) VALUES ($1, $2, $3)",
+		dozen.Code, dozen.Name, dozen.Captain)
+	return err
+}
+
+func (r *BotRepository) GetUserDozen(userID int64) (bot_types.Dozen, error) {
+	var dozen bot_types.Dozen
+
+	err := r.db.Get(&dozen, `
+		SELECT d.*
+		FROM dozens d
+		JOIN user_dozen ud ON d.id = ud.dozen_id
+		WHERE ud.user_id = $1
+	`, userID)
+
+	if err != nil {
+		return bot_types.Dozen{}, err
+	}
+
+	return dozen, nil
+}

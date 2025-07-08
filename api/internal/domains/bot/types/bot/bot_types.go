@@ -13,7 +13,8 @@ const (
 )
 
 type Dozen struct {
-	ID   int    `db:"id" json:"id"`
-	Code string `db:"code" json:"code"`
-	Name string `db:"name" json:"name"`
+	ID      int    `db:"id" json:"id"`
+	Code    string `db:"code" json:"code"`
+	Name    string `db:"name" json:"name"`
+	Captain int64  `db:"captain" json:"captain"`
 }
