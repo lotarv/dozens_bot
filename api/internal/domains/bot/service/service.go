@@ -35,25 +35,19 @@ type repository interface {
 }
 
 type BotService struct {
-	repo            repository
-	bot             *tgbotapi.BotAPI
-	notionClient    *notionapi.Client
-	notionConfig    bot_types.NotionConfig
-	user            user_types.User
-	dozen           bot_types.Dozen
-	isCreatingDozen bool
+	repo         repository
+	bot          *tgbotapi.BotAPI
+	notionClient *notionapi.Client
+	notionConfig bot_types.NotionConfig
 }
 
 func New(repo repository, bot *tgbotapi.BotAPI, notionClient *notionapi.Client, config bot_types.NotionConfig) *BotService {
 
 	return &BotService{
-		repo:            repo,
-		bot:             bot,
-		notionClient:    notionClient,
-		notionConfig:    config,
-		user:            user_types.User{},
-		dozen:           bot_types.Dozen{},
-		isCreatingDozen: false,
+		repo:         repo,
+		bot:          bot,
+		notionClient: notionClient,
+		notionConfig: config,
 	}
 }
 
@@ -152,17 +146,18 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 
 func (s *BotService) handleStart(msg *tgbotapi.Message) {
 
-	s.dozen = bot_types.Dozen{}
+	session := getSession(msg.From.ID)
+	session.Dozen = bot_types.Dozen{}
 
 	dozen, err := s.repo.GetUserDozen(msg.From.ID)
 	if err == nil {
-		s.dozen = dozen
+		session.Dozen = dozen
 		s.handleStartRegistered(msg)
 		return
 	}
 
-	s.user = user_types.User{}
-	s.user.ID = msg.From.ID
+	session.User = user_types.User{}
+	session.User.ID = msg.From.ID
 	chatID := msg.Chat.ID
 	text := "Добро пожаловать! Выберите действие:"
 	btns := tgbotapi.NewInlineKeyboardMarkup(
@@ -178,7 +173,9 @@ func (s *BotService) handleStart(msg *tgbotapi.Message) {
 }
 
 func (s *BotService) handleStartRegistered(msg *tgbotapi.Message) {
-	text := fmt.Sprintf("Добро пожаловать, %s! Вы уже являетесь членом десятки", s.user.FullName)
+	session := getSession(msg.From.ID)
+
+	text := fmt.Sprintf("Добро пожаловать, %s! Вы уже являетесь членом десятки", session.User.FullName)
 	s.bot.Send(tgbotapi.NewMessage(msg.Chat.ID, text))
 }
 
@@ -189,12 +186,14 @@ func (s *BotService) handleUnknown(msg *tgbotapi.Message) {
 }
 
 func (s *BotService) createDozen(usr *tgbotapi.User, userID int64) {
-	if s.user.FullName != "" {
+	session := getSession(userID)
+
+	if session.User.FullName != "" {
 		s.bot.Send(tgbotapi.NewMessage(userID, "Введите название вашей десятки:"))
 		s.repo.SetUserState(userID, "create_enter_name")
 		return
 	}
-	s.isCreatingDozen = true
+	session.IsCreatingDozen = true
 	s.bot.Send(tgbotapi.NewMessage(userID, "Чтобы создать десятку, необходимо внести данные о капитане"))
 
 	btns := tgbotapi.NewInlineKeyboardMarkup(
@@ -212,7 +211,9 @@ func (s *BotService) createDozen(usr *tgbotapi.User, userID int64) {
 }
 
 func (s *BotService) handleDozenNameInput(userID int64, dozen_name string) {
-	s.dozen.Name = dozen_name
+	session := getSession(userID)
+
+	session.Dozen.Name = dozen_name
 	text := fmt.Sprintf("Подтвердите название: %s", dozen_name)
 	btns := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
@@ -227,25 +228,27 @@ func (s *BotService) handleDozenNameInput(userID int64, dozen_name string) {
 }
 
 func (s *BotService) handleDozenNameApprove(userID int64) {
+	session := getSession(userID)
+
 	randomCode := helpers.GenerateRandomDozenCode()
 
-	s.dozen.Code = randomCode
-	s.dozen.Captain = userID
+	session.Dozen.Code = randomCode
+	session.Dozen.Captain = userID
 
-	if err := s.repo.CreateDozen(s.dozen); err != nil {
-		slog.Error("failed to create dozen", "dozen", s.dozen, "error", err)
+	if err := s.repo.CreateDozen(session.Dozen); err != nil {
+		slog.Error("failed to create dozen", "dozen", session.Dozen, "error", err)
 		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось создать десятку. Попробуйте позже!"))
 		return
 	}
 
-	newDozen, _ := s.repo.GetDozenByCode(s.dozen.Code)
+	newDozen, _ := s.repo.GetDozenByCode(session.Dozen.Code)
 
-	if err := s.repo.AddUserToDozen(s.dozen.Captain, newDozen.ID); err != nil {
-		slog.Error("failed to join dozen", "captainID", s.dozen.Captain, "error", err)
+	if err := s.repo.AddUserToDozen(session.Dozen.Captain, newDozen.ID); err != nil {
+		slog.Error("failed to join dozen", "captainID", session.Dozen.Captain, "error", err)
 		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось добавить Вас в десятку. Попробуйте зайти через кнопку присоедениться к десятке"))
 	}
 
-	text := fmt.Sprintf("Ваша десятка \"%s\" успешно создана!\nКод десятки: <code>%s</code>", s.dozen.Name, randomCode)
+	text := fmt.Sprintf("Ваша десятка \"%s\" успешно создана!\nКод десятки: <code>%s</code>", session.Dozen.Name, randomCode)
 	s.repo.DeleteUserState(userID)
 	msg := tgbotapi.NewMessage(userID, text)
 	msg.ParseMode = "HTML"
@@ -262,8 +265,10 @@ func (s *BotService) joinDozen(userID int64) {
 }
 
 func (s *BotService) handleEnterSphere(usr *tgbotapi.User, userID int64) {
-	if s.user.FullName == "" {
-		s.user.FullName = usr.FirstName + " " + usr.LastName
+	session := getSession(userID)
+
+	if session.User.FullName == "" {
+		session.User.FullName = usr.FirstName + " " + usr.LastName
 	}
 	s.repo.SetUserState(userID, "join_enter_sphere")
 	s.bot.Send(tgbotapi.NewMessage(userID, "Введите сферу: "))
@@ -275,20 +280,26 @@ func (s *BotService) handleChangeName(userID int64) {
 }
 
 func (s *BotService) handleChangedNameInput(userID int64, text string) {
+	session := getSession(userID)
+
 	s.bot.Send(tgbotapi.NewMessage(userID, fmt.Sprintf("Имя изменено на %s", text)))
-	s.user.FullName = text
+	session.User.FullName = text
 	s.repo.SetUserState(userID, "join_enter_sphere")
 	s.handleEnterSphere(nil, userID)
 }
 
 func (s *BotService) handleSphereInput(userID int64, text string) {
+	session := getSession(userID)
+
 	slog.Info("got sphere", "sphere", text)
 	s.repo.SetUserState(userID, "join_enter_income")
-	s.user.Niche = text
+	session.User.Niche = text
 	s.bot.Send(tgbotapi.NewMessage(userID, "Введите годовой оборот(млн. руб):"))
 }
 
 func (s *BotService) handleIncomeInput(userID int64, text string) {
+	session := getSession(userID)
+
 	text = strings.ReplaceAll(text, ",", ".") // Поддержка запятых как десятичного разделителя
 	income, err := strconv.ParseFloat(strings.TrimSpace(text), 64)
 	if err != nil || income <= 0 {
@@ -298,7 +309,7 @@ func (s *BotService) handleIncomeInput(userID int64, text string) {
 
 	slog.Info("got income", "income", income)
 
-	s.user.AnnualIncome = income
+	session.User.AnnualIncome = income
 
 	if err := s.repo.SetUserState(userID, "join_approve"); err != nil {
 		slog.Error("failed to set state", "user_id", userID, "err", err)
@@ -316,13 +327,15 @@ func (s *BotService) handleIncomeInput(userID int64, text string) {
 	Принято! Проверьте правильность данных:
 	Имя: %s
 	Сфера бизнеса: %s
-	Годовой оборот: %.1f млн.руб`, s.user.FullName, s.user.Niche, s.user.AnnualIncome))
+	Годовой оборот: %.1f млн.руб`, session.User.FullName, session.User.Niche, session.User.AnnualIncome))
 	msgOut.ReplyMarkup = btns
 	s.bot.Send(msgOut)
-	slog.Info("current user state", "user", s.user)
+	slog.Info("current user state", "user", session.User)
 }
 
 func (s *BotService) handleJoinCodeInput(msg *tgbotapi.Message, userID int64, chatID int64, code string) {
+	session := getSession(userID)
+
 	code = strings.ToLower(strings.TrimSpace(code))
 	dozen, err := s.repo.GetDozenByCode(code)
 	if err != nil {
@@ -331,12 +344,12 @@ func (s *BotService) handleJoinCodeInput(msg *tgbotapi.Message, userID int64, ch
 		return
 	}
 	slog.Info("got dozen: ", "dozen", dozen)
-	s.dozen = dozen
+	session.Dozen = dozen
 
 	//Если зарегистрированный пользователь хочет присоединиться к десятке,сразу перекидываем на шаг с подтверждением
 	user, err := s.repo.GetUserByID(context.Background(), msg.From.ID)
 	if err == nil {
-		s.user = *user
+		session.User = *user
 		s.handleIncomeInput(msg.From.ID, strconv.FormatFloat(user.AnnualIncome, 'f', 1, 64))
 		return
 	}
@@ -353,7 +366,7 @@ func (s *BotService) handleJoinCodeInput(msg *tgbotapi.Message, userID int64, ch
 	msgOut.ReplyMarkup = btns
 
 	s.bot.Send(msgOut)
-	s.user.ID = userID
+	session.User.ID = userID
 
 	if err := s.repo.SetUserState(userID, "join_enter_name"); err != nil {
 		slog.Error("failed to set user state", "user_id", userID, "err", err)
@@ -362,21 +375,23 @@ func (s *BotService) handleJoinCodeInput(msg *tgbotapi.Message, userID int64, ch
 }
 
 func (s *BotService) handleJoinSuccess(userID int64) {
-	if err := s.repo.CreateUser(context.Background(), &s.user); err != nil {
-		slog.Error("failed to create user", "error", err, "user", s.user)
+	session := getSession(userID)
+
+	if err := s.repo.CreateUser(context.Background(), &session.User); err != nil {
+		slog.Error("failed to create user", "error", err, "user", session.User)
 		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось создать пользователя. Попробуйте позже."))
 		return
 	}
 
-	if s.isCreatingDozen { //Выходим из ветки с присоединением, если пользователь создает десятку без регистрации
-		text := fmt.Sprintf(`Вы успешно зарегистрировались,  "%s". Переходим к созданию десятки`, s.user.FullName)
+	if session.IsCreatingDozen { //Выходим из ветки с присоединением, если пользователь создает десятку без регистрации
+		text := fmt.Sprintf(`Вы успешно зарегистрировались,  "%s". Переходим к созданию десятки`, session.User.FullName)
 		s.bot.Send(tgbotapi.NewMessage(userID, text))
 		s.createDozen(nil, userID)
 		return
 	}
 
-	if err := s.repo.AddUserToDozen(userID, s.dozen.ID); err != nil {
-		slog.Error("failed to join dozen user", "error", err, "user", s.user, "dozen", s.dozen)
+	if err := s.repo.AddUserToDozen(userID, session.Dozen.ID); err != nil {
+		slog.Error("failed to join dozen user", "error", err, "user", session.User, "dozen", session.Dozen)
 		s.bot.Send(tgbotapi.NewMessage(userID, "Не удалось присоединиться к десятке, попробуйте позже."))
 		return
 	}
@@ -385,11 +400,13 @@ func (s *BotService) handleJoinSuccess(userID int64) {
 		slog.Error("failed to remove current user state", "userID", userID)
 	}
 
-	text := fmt.Sprintf(`Вы успешно присоединились к десятке "%s"`, s.dozen.Name)
+	text := fmt.Sprintf(`Вы успешно присоединились к десятке "%s"`, session.Dozen.Name)
 	s.bot.Send(tgbotapi.NewMessage(userID, text))
 }
 
 func (s *BotService) handleJoinReset(userID int64) {
+	session := getSession(userID)
+
 	s.repo.SetUserState(userID, "join_enter_name")
 
 	btns := tgbotapi.NewInlineKeyboardMarkup(
@@ -399,12 +416,12 @@ func (s *BotService) handleJoinReset(userID int64) {
 		),
 	)
 
-	text := fmt.Sprintf("Начнем сначала. Ваше имя: %s", s.user.FullName)
+	text := fmt.Sprintf("Начнем сначала. Ваше имя: %s", session.User.FullName)
 	msgOut := tgbotapi.NewMessage(userID, text)
 	msgOut.ReplyMarkup = btns
 
 	s.bot.Send(msgOut)
-	s.user.ID = userID
+	session.User.ID = userID
 
 	if err := s.repo.SetUserState(userID, "join_enter_name"); err != nil {
 		slog.Error("failed to set user state", "user_id", userID, "err", err)

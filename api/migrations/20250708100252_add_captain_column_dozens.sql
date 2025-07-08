@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 ALTER TABLE dozens
-ADD COLUMN captain BIGINT UNIQUE NOT NULL REFERENCES users(id);
+ADD COLUMN captain BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE;
 -- +goose StatementEnd
 
 -- +goose Down
