@@ -64,7 +64,7 @@ func New() *App {
 	userController := user.NewUserController(router, storage)
 	app.AddController(userController)
 
-	botController := bot.NewBotController(storage)
+	botController := bot.NewBotController(storage, userController.GetRepository())
 	app.AddController(botController)
 
 	membersController := members.NewMembersController(router, storage)

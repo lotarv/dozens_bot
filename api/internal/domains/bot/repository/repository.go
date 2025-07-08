@@ -1,19 +1,31 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
+	"log/slog"
 
 	"github.com/jmoiron/sqlx"
+	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
+	user_types "github.com/lotarv/dozens_bot/internal/domains/user/types"
 	"github.com/lotarv/dozens_bot/internal/storage"
 )
 
 type BotRepository struct {
 	db *sqlx.DB
+	UsersRepository
 }
 
-func New(storage *storage.Storage) *BotRepository {
+type UsersRepository interface {
+	CreateUser(ctx context.Context, user *user_types.User) error
+	UpdateUser(ctx context.Context, user *user_types.User) error
+	GetUserByID(ctx context.Context, userID int64) (*user_types.User, error)
+}
+
+func New(storage *storage.Storage, userRepo UsersRepository) *BotRepository {
 	return &BotRepository{
-		db: storage.DB(),
+		db:              storage.DB(),
+		UsersRepository: userRepo,
 	}
 }
 
@@ -53,6 +65,12 @@ func (r *BotRepository) GetUserState(userID int64) (string, error) {
 	return state, err
 }
 
+func (r *BotRepository) DeleteUserState(userID int64) error {
+	query := "DELETE FROM user_state WHERE telegram_id=$1"
+	_, err := r.db.Exec(query, userID)
+	return err
+}
+
 func (r *BotRepository) SetUserState(userID int64, state string) error {
 	_, err := r.db.Exec(`
 		INSERT INTO user_state (telegram_id, current_state, updated_at)
@@ -69,11 +87,19 @@ func (r *BotRepository) ResetUserState(userID int64) error {
 	return err
 }
 
-func (r *BotRepository) GetDozenByCode(code string) (int, error) {
-	var dozenID int
-	err := r.db.QueryRow(`SELECT id FROM dozens WHERE code = $1`, code).Scan(&dozenID)
-	if err == sql.ErrNoRows {
-		return 0, nil
+func (r *BotRepository) GetDozenByCode(code string) (bot_types.Dozen, error) {
+	var dozen bot_types.Dozen
+	err := r.db.Get(&dozen, `SELECT * FROM dozens WHERE code = $1`, code)
+	if err != nil {
+		return bot_types.Dozen{}, err
 	}
-	return dozenID, err
+
+	slog.Info("repository dozen", "dozen", dozen)
+	return dozen, err
+}
+
+func (r *BotRepository) AddUserToDozen(userID int64, dozenID int) error {
+	query := "INSERT INTO user_dozen (dozen_id, user_id) VALUES ($1, $2)"
+	_, err := r.db.Exec(query, dozenID, userID)
+	return err
 }

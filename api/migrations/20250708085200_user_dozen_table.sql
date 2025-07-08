@@ -1,0 +1,15 @@
+-- +goose Up
+-- +goose StatementBegin
+CREATE TABLE user_dozen (
+    dozen_id INT NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id),
+    CONSTRAINT fk_dozen FOREIGN KEY (dozen_id) REFERENCES dozens(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE user_dozen;
+-- +goose StatementEnd

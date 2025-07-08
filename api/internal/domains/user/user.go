@@ -26,6 +26,10 @@ func NewUserController(router *chi.Mux, storage *storage.Storage) *UserControlle
 	}
 }
 
+func (c *UserController) GetRepository() *repository.UsersRepository {
+	return c.repo
+}
+
 func (c *UserController) Build() {
 	c.transport.RegisterRoutes()
 }
