@@ -154,8 +154,15 @@ func (s *BotService) joinDozen(userID int64) {
 func (s *BotService) handleStart(msg *tgbotapi.Message) {
 
 	s.dozen = bot_types.Dozen{}
-	s.user = user_types.User{}
 
+	user, err := s.repo.GetUserByID(context.Background(), msg.From.ID)
+	if err == nil && user != nil && user.ID != 0 {
+		s.user = *user
+		s.handleStartRegistered(msg)
+		return
+	}
+
+	s.user = user_types.User{}
 	chatID := msg.Chat.ID
 	text := "Добро пожаловать! Выберите действие:"
 	btns := tgbotapi.NewInlineKeyboardMarkup(
@@ -168,6 +175,11 @@ func (s *BotService) handleStart(msg *tgbotapi.Message) {
 	msgOut.ReplyMarkup = btns
 
 	s.bot.Send(msgOut)
+}
+
+func (s *BotService) handleStartRegistered(msg *tgbotapi.Message) {
+	text := fmt.Sprintf("Добро пожаловать, %s! Вы уже являетесь членом десятки", s.user.FullName)
+	s.bot.Send(tgbotapi.NewMessage(msg.Chat.ID, text))
 }
 
 func (s *BotService) handleUnknown(msg *tgbotapi.Message) {
