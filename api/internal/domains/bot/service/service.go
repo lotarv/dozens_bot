@@ -99,14 +99,18 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 	}
 
 	//2.Общие команды
-
-	switch {
-	case text == "/start":
-		s.handleStart(msg)
-	case strings.Contains(text, "#отчет"):
+	normalized := strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
+	if strings.Contains(normalized, "#отчет") {
 		s.handleReport(msg)
-	default:
-		s.handleUnknown(msg)
+		return
+	}
+	if msg.Chat.IsPrivate() {
+		switch {
+		case text == "/start":
+			s.handleStart(msg)
+		default:
+			s.handleUnknown(msg)
+		}
 	}
 }
 
