@@ -145,8 +145,9 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 }
 
 func (s *BotService) handleStart(msg *tgbotapi.Message) {
-
+	resetSession(msg.From.ID)
 	session := getSession(msg.From.ID)
+	slog.Info("New session: ", "session", session)
 	session.Dozen = bot_types.Dozen{}
 
 	dozen, err := s.repo.GetUserDozen(msg.From.ID)
@@ -250,6 +251,7 @@ func (s *BotService) handleDozenNameApprove(userID int64) {
 
 	text := fmt.Sprintf("Ваша десятка \"%s\" успешно создана!\nКод десятки: <code>%s</code>", session.Dozen.Name, randomCode)
 	s.repo.DeleteUserState(userID)
+	resetSession(userID)
 	msg := tgbotapi.NewMessage(userID, text)
 	msg.ParseMode = "HTML"
 	s.bot.Send(msg)
@@ -346,11 +348,22 @@ func (s *BotService) handleJoinCodeInput(msg *tgbotapi.Message, userID int64, ch
 	slog.Info("got dozen: ", "dozen", dozen)
 	session.Dozen = dozen
 
-	//Если зарегистрированный пользователь хочет присоединиться к десятке,сразу перекидываем на шаг с подтверждением
+	//Если зарегистрированный пользователь хочет присоединиться к десятке,сразу добавляем его к десятке
 	user, err := s.repo.GetUserByID(context.Background(), msg.From.ID)
-	if err == nil {
+	if err == nil && user.ID != 0 {
 		session.User = *user
-		s.handleIncomeInput(msg.From.ID, strconv.FormatFloat(user.AnnualIncome, 'f', 1, 64))
+		if err := s.repo.AddUserToDozen(userID, dozen.ID); err != nil {
+			slog.Error("failed to add existing user to dozen", "user_id", userID, "err", err)
+			s.bot.Send(tgbotapi.NewMessage(chatID, "Не удалось присоединиться к десятке. Попробуйте позже."))
+			return
+		}
+
+		if err := s.repo.DeleteUserState(userID); err != nil {
+			slog.Error("failed to clear user state", "user_id", userID, "err", err)
+		}
+
+		s.bot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Вы успешно присоединились к десятке \"%s\"", dozen.Name)))
+		resetSession(userID)
 		return
 	}
 
@@ -401,6 +414,7 @@ func (s *BotService) handleJoinSuccess(userID int64) {
 	}
 
 	text := fmt.Sprintf(`Вы успешно присоединились к десятке "%s"`, session.Dozen.Name)
+	resetSession(userID)
 	s.bot.Send(tgbotapi.NewMessage(userID, text))
 }
 

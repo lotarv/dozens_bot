@@ -52,7 +52,7 @@ func createTelegramBot() *tgbotapi.BotAPI {
 		panic("Failed to initialize bot")
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 	slog.Info("Authorized on account", "username", bot.Self.UserName)
 
 	return bot
