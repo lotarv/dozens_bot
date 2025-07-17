@@ -59,11 +59,11 @@ async function createOrUpdateUser() {
 
 onBeforeMount(async () => {
     window.Telegram.WebApp.disableVerticalSwipes();
-    await membersStore.fetchMembers();
     await cryptStore.fetchKey();
     if (cryptStore.key == "") {
         router.push({name: "login"})
     }
+    await membersStore.fetchMembers();
     await createOrUpdateUser();
 
 });
