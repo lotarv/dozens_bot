@@ -41,6 +41,11 @@ const routes = [
         path:"/declaration/:username/:id",
         name:"declaration",
         component: () => import('../features/otherMemberProfile/views/DeclarationView.vue')
+    }, 
+    {
+        path:"/login:",
+        name:"login",
+        component: () =>  import('../features/loginPage/views/LoginView.vue')
     }
 ]
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	member_types "github.com/lotarv/dozens_bot/internal/domains/members/types"
 	"github.com/lotarv/dozens_bot/internal/domains/user/types"
 	"github.com/lotarv/dozens_bot/internal/storage"
 )
@@ -21,13 +22,14 @@ func New(storage *storage.Storage) *UsersRepository {
 
 func (r *UsersRepository) CreateUser(ctx context.Context, user *types.User) error {
 	query := `
-	INSERT INTO users (id, full_name, avatar_url, niche, annual_income)
-	VALUES (:id, :full_name, :avatar_url, :niche, :annual_income)
+	INSERT INTO users (id, full_name, avatar_url, niche, annual_income, username)
+	VALUES (:id, :full_name, :avatar_url, :niche, :annual_income, :username)
 	ON CONFLICT (id) DO UPDATE SET
 		full_name = EXCLUDED.full_name,
 		avatar_url = EXCLUDED.avatar_url,
 		niche = EXCLUDED.niche,
-		annual_income = EXCLUDED.annual_income
+		annual_income = EXCLUDED.annual_income,
+		username = EXCLUDED.username
 	`
 
 	_, err := r.db.NamedExec(query, user)
@@ -43,6 +45,7 @@ func (r *UsersRepository) UpdateUser(ctx context.Context, user *types.User) erro
             avatar_url = :avatar_url,
             niche = :niche,
             annual_income = :annual_income,
+			username = :username
         WHERE id = :id
     `
 	_, err := r.db.NamedExecContext(ctx, query, user)
@@ -72,4 +75,16 @@ func (r *UsersRepository) GetAll(ctx context.Context) ([]types.User, error) {
 		return nil, fmt.Errorf("failed to get all users: %v", err.Error())
 	}
 	return users, nil
+}
+
+func (r *UsersRepository) GetMemberByUsername(username string) (member_types.Member, error) {
+	query := "SELECT * FROM members WHERE username = $1"
+	var member member_types.Member
+
+	err := r.db.Get(&member, query, username)
+	if err != nil {
+		return member_types.Member{}, err
+	}
+
+	return member, nil
 }

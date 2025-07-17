@@ -2,9 +2,12 @@
 import ArrowLeft from '@/components/icons/ArrowLeft.vue';
 import MarkDownComponent from '@/components/MarkDownComponent.vue';
 import { getTelegramInitData } from '@/services/auth';
+import { decryptGoAES } from '@/services/crypto';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
+import { useDecryptionStore } from '@/stores/decryption';
 
+const cryptoStore = useDecryptionStore()
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const rulesStr = ref<string>('')
@@ -18,8 +21,7 @@ onMounted(async () => {
                 "Cache-Control":"no-cache"
             }
         })
-        rulesStr.value = response.data.text
-        console.log(rulesStr.value)
+        rulesStr.value = await decryptGoAES(response.data.text, cryptoStore.key? cryptoStore.key: "")
 
     } catch (err) {
         error.value = 'Failed to load rules. Please try again later.';

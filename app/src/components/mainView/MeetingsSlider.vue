@@ -11,7 +11,6 @@ const props = defineProps<{
 const currentIndex = ref(3)
 
 function handleSlideChange(swiper:any) {
-  console.log(currentIndex.value)
   currentIndex.value = swiper.realIndex
 }
 </script>
