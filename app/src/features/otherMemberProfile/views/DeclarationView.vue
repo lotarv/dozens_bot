@@ -8,10 +8,13 @@ import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import MarkDownComponent from '@/components/MarkDownComponent.vue';
 import ArrowLeft from '@/components/icons/ArrowLeft.vue';
+import { decryptGoAES } from '@/services/crypto';
+import { useDecryptionStore } from '@/stores/decryption';
+const cryptoStore = useDecryptionStore()
 const route = useRoute()
 const router = useRouter()
 const declaration = ref<DeclarationDocument | null>(null)
-
+const declarationText = ref<string>("")
 function goBack() {
     router.back()
 }
@@ -21,8 +24,9 @@ onBeforeMount(async() => {
     if (!declarationID) return
 
     declaration.value = await DozensTransport.GetDeclarationByID(declarationID)
-    console.log(declarationID)
-    console.log(declaration)
+    if (declaration.value) {
+        declarationText.value = await decryptGoAES(declaration.value?.text, cryptoStore.key)
+    }
 })
 </script>
 <template>
@@ -34,7 +38,7 @@ onBeforeMount(async() => {
             <p class="flex-1 flex justify-between items-center"><span>Декларация</span> </p>
         </div>
         <div class="px-2">
-            <MarkDownComponent :text="declaration.text"></MarkDownComponent>
+            <MarkDownComponent :text="declarationText"></MarkDownComponent>
         </div>
     </section>
 </template>

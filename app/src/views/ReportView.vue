@@ -1,12 +1,15 @@
 <script lang="ts" setup>
 import { useReportsStore } from '@/stores/reportsStore';
+import { useDecryptionStore } from '@/stores/decryption';
 import { useRoute, useRouter } from 'vue-router';
 import MarkDownComponent from '@/components/MarkDownComponent.vue';
-import { computed } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import ArrowLeft from '@/components/icons/ArrowLeft.vue';
+import { decryptGoAES } from '@/services/crypto';
 const router = useRouter()
 const route = useRoute()
 const reportsStore = useReportsStore()
+const cryptoStore = useDecryptionStore()
 
 const username = route.params.username as string
 const reportId = Number(route.params.id)
@@ -24,10 +27,15 @@ const report = computed(() => {
     return reportsStore.reports[username]?.reports[reportId]
 })
 
+const reportText = ref<string>("")
+
 function goBack() {
     router.back()
 }
 
+onBeforeMount(async() => {
+    reportText.value = await decryptGoAES(report.value.text, cryptoStore.key)
+})
 </script>
 <template>
     <section class="p-1 flex flex-col font-medium">
@@ -38,7 +46,7 @@ function goBack() {
             <p class="flex-1 flex justify-between items-center"><span>Отчет</span> <span class="text-base">{{ formatDate(report.creation_date) }}</span></p>
         </div>
         <div class="px-2">
-            <MarkDownComponent :text="report.text"></MarkDownComponent>
+            <MarkDownComponent :text="reportText"></MarkDownComponent>
         </div>
     </section>
 </template>

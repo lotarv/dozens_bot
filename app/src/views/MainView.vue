@@ -15,6 +15,8 @@ import SadFaceIcon from '@/components/icons/SadFaceIcon.vue';
 import { declaration } from '@/mocks/declaration';
 import CurrentDeclaration from '@/components/mainView/CurrentDeclaration.vue';
 import { useMembersStore } from '@/stores/membersStore';
+import { useDecryptionStore } from '@/stores/decryption';
+import { useRouter } from 'vue-router';
 interface Member {
     fio: string;
     avatar_url: string;
@@ -24,9 +26,10 @@ interface Member {
 }
 
 const membersStore = useMembersStore()
+const cryptStore = useDecryptionStore()
 const isLoading = ref(false);
 const error = ref<string | null>(null);
-
+const router = useRouter()
 
 function shortenLastName(fullname: string): string {
     let separated = fullname.split(" ")
@@ -39,7 +42,6 @@ function shortenLastName(fullname: string): string {
 //TODO: add user store
 async function createOrUpdateUser() {
     try {
-        console.log(getTelegramInitData())
         await axios.post(
             `${import.meta.env.VITE_API_URL}/users`,
             {},
@@ -58,6 +60,10 @@ async function createOrUpdateUser() {
 onBeforeMount(async () => {
     window.Telegram.WebApp.disableVerticalSwipes();
     await membersStore.fetchMembers();
+    await cryptStore.fetchKey();
+    if (cryptStore.key == "") {
+        router.push({name: "login"})
+    }
     await createOrUpdateUser();
 
 });

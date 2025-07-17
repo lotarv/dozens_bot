@@ -8,5 +8,5 @@ type User struct {
 	AvatarURL    sql.NullString `json:"avatar_url" db:"avatar_url"`
 	Niche        string         `json:"niche" db:"niche"`
 	AnnualIncome float64        `json:"annual_income" db:"annual_income"`
-	// Username     string         `json:"username" db:"username"`
+	Username     string         `json:"username" db:"username"`
 }

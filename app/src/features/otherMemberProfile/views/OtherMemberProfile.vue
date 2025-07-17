@@ -27,8 +27,8 @@ const member: Member = membersStore.getMemberByUsername(username)
 
 onBeforeMount(async () => {
     await reportsStore.fetchUserReports(username)
-    declarations.value = await DozensTransport.GetDeclarations(username)
     loaded.value = true
+    if(declarations.value.length == 0) declarations.value = await DozensTransport.GetDeclarations(username)
 })
 </script>
 <template>

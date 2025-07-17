@@ -3,10 +3,12 @@ package repository
 import (
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	document_types "github.com/lotarv/dozens_bot/internal/domains/documents/types"
 	member_types "github.com/lotarv/dozens_bot/internal/domains/members/types"
+	"github.com/lotarv/dozens_bot/internal/utils/crypto"
 )
 
 type NotionSyncRepository struct {
@@ -89,10 +91,16 @@ func (r *NotionSyncRepository) SyncDocumentsWithNotion(documents []document_type
 	ON CONFLICT(id) DO UPDATE
 	SET text=EXCLUDED.text`
 
+	passphrase := os.Getenv("ENCRYPTION_KEY")
 	for _, document := range documents {
-		_, err := r.db.Exec(query, document.ID, document.DocumentNotionID, document.Text)
+		encryptedText, err := crypto.Encrypt(document.Text, passphrase)
 		if err != nil {
-			slog.Error("failed to synchronize document", "document_id", document.ID, "error", err)
+			slog.Error("failed to encrypt document", "document_id", document.ID, "error", err)
+			continue
+		}
+		_, err = r.db.Exec(query, document.ID, document.DocumentNotionID, encryptedText)
+		if err != nil {
+			slog.Error("failed to save document: ", "document_id", document.ID)
 			continue
 		}
 	}
