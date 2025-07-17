@@ -17,7 +17,7 @@ function openChatBot() {
 </template>
 <style scoped>
 .login-main {
-    @apply bg-center bg-cover flex flex-col items-center justify-center px-4;
+    @apply bg-center bg-cover flex flex-col items-center justify-center px-4 overflow-hidden rounded-xl;
     background-image: url(../assets/login-bg.png);
 }
 
