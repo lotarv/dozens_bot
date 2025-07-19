@@ -1,8 +1,15 @@
 <script lang="ts" setup>
 
 function openChatBot() {
-    const botName = import.meta.env.VITE_BOT_NAME
-    window.location.href = `https://t.me/${botName}`
+    const botName = import.meta.env.VITE_BOT_NAME;
+    const url = `https://t.me/${botName}`;
+
+    if (window.Telegram && window.Telegram.WebApp) {
+        Telegram.WebApp.openTelegramLink(url);
+        Telegram.WebApp.close();
+    } else {
+        window.location.href = url;
+    }
 }
 
 </script>

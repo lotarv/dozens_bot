@@ -9,6 +9,7 @@ interface TelegramWebApp {
     };
     disableVerticalSwipes(): void;
     close(): void;
+     openTelegramLink(url: string): void;
     // Добавьте другие методы и свойства Telegram Web App API, которые используете
   }
   
@@ -17,3 +18,5 @@ interface TelegramWebApp {
       WebApp: TelegramWebApp;
     };
   }
+
+declare const Telegram: Window["Telegram"];
