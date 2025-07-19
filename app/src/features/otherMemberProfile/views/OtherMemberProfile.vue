@@ -32,8 +32,8 @@ onBeforeMount(async () => {
 })
 </script>
 <template>
-    <section>
-        <div class="header">
+    <section class="absolute inset-0 z-10">
+        <div class="header" :style="{backgroundImage: `url(${member.avatar_url})`}">
             <div class="header-link-and-income">
                 <RouterLink :to="'/members'">
                     <div class="p-2 bg-white w-12 h-12 rounded-full text-[22px] flex items-center justify-center">
@@ -43,16 +43,15 @@ onBeforeMount(async () => {
 
                 <div class="member-income">
                     <span>{{ `${member.annual_income }М ₽ / год`}}</span>
-                    <div class="dot"></div>
-                    <span class="niche">{{ member.niche }}</span>
                 </div>
 
             </div>
-            <div class="member-name">
-                {{ member.fio }}
+            <div class="blur-name-box">
+                <span class="font-medium text-4xl tracking-[-1px]">{{ member.fio }}</span>
+                <span class="font-medium text-base tracking-[-0.4px]">{{ member.niche }}</span>
             </div>
         </div>
-        <div class="documents" v-if="loaded">
+        <div class="documents -mt-4 z-20" v-if="loaded">
             <div class="declarations-container" v-if="declarations && declarations.length > 0">
                 <Declarations :declarations="declarations" :member="member"/>
             </div>
@@ -64,21 +63,42 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
+.reset-layout {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 section {
-    @apply flex flex-col pl-1 pb-1 pr-1 pt-[7px]; 
+    @apply flex flex-col; 
 }
 
 .header{
-    @apply flex flex-col gap-4 p-3
+    @apply flex flex-col gap-[12rem] bg-cover
 }
 
 .header-link-and-income{
     font-family: 'SF Pro Text';
-    @apply flex justify-between 
+    @apply flex justify-between p-3
 }
 
+.blur-name-box {
+    @apply flex flex-col gap-2 text-white pt-4 px-5 pb-7;
+
+}
+
+.blur-name-box {
+  position: relative;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: white;
+  overflow: hidden;
+}
+
+
 .member-income{
-    @apply flex flex-row gap-2 text-[16px] font-[600] tracking-[-0.4px] leading-6 items-center
+    @apply flex flex-row gap-2 text-[16px] font-semibold tracking-[-0.4px] leading-6 items-center rounded-full bg-[hsla(0,0%,100%,0.7)] px-3 py-2;
+    backdrop-filter:blur(20.1px);
+    -webkit-backdrop-filter: blur(20.1px); /* для Safari */
 }
 
 .member-name {
