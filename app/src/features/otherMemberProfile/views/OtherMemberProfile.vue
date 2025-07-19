@@ -73,7 +73,7 @@ section {
 }
 
 .header{
-    @apply flex flex-col gap-[12rem] bg-cover
+    @apply flex flex-col gap-[12rem] bg-cover bg-center 
 }
 
 .header-link-and-income{

@@ -63,7 +63,7 @@ function openReport(username: string, reportID: number) {
 
 <style scoped>
 .reports {
-    @apply flex flex-col pt-1 pl-1 pr-1 pb-4 rounded-[20px] gap-1 items-center
+    @apply flex flex-col rounded-[20px] gap-1 items-center bg-[#EBEBEB]
 }
 
 .title {
