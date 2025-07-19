@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -78,4 +79,66 @@ func GenerateRandomDozenCode() string {
 		}
 	}
 	return string(code)
+}
+
+var knownMembers = []string{
+	"Анна Берген",
+	"Дмитрий Кокорев",
+	"Михаил Степанов",
+	"Александр Капустянов",
+	"Анастасия Яновская",
+	"Максим Борцов",
+	"Юля Донцова",
+	"Полина HAPPYDAYS",
+	"Юрий Терентьев",
+	"Михаил Старостин",
+	"Илья Новоселов",
+	"Андрей Грин",
+}
+
+// подготовка всех вариантов
+func generateNamePatterns() []string {
+	var patterns []string
+	for _, fullName := range knownMembers {
+		parts := strings.Fields(strings.ToLower(fullName)) // разбиваем по пробелу
+		if len(parts) == 2 {
+			first, last := parts[0], parts[1]
+			patterns = append(patterns,
+				first+" "+last,
+				last+" "+first,
+				last, // только фамилия
+			)
+		} else if len(parts) == 1 {
+			patterns = append(patterns, parts[0])
+		}
+	}
+	return patterns
+}
+
+func IsLikelyReport(text string) bool {
+	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
+
+	if strings.Contains(text, "#отчет") {
+		return true
+	}
+
+	if !strings.HasPrefix(text, "#") {
+		return false
+	}
+
+	lines := strings.Split(text, "\n")
+	if len(lines) == 0 {
+		return false
+	}
+
+	firstLine := strings.TrimPrefix(strings.TrimSpace(lines[0]), "#")
+	firstLine = strings.ToLower(firstLine)
+
+	for _, pattern := range generateNamePatterns() {
+		if strings.HasPrefix(firstLine, pattern) {
+			return true
+		}
+	}
+
+	return false
 }

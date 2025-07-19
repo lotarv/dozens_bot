@@ -99,8 +99,7 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 	}
 
 	//2.Общие команды
-	normalized := strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
-	if strings.Contains(normalized, "#отчет") {
+	if helpers.IsLikelyReport(text) {
 		s.handleReport(msg)
 		return
 	}
@@ -507,29 +506,36 @@ func (s *BotService) createReport(documentID, authorID, date string) error {
 
 func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	chatID := msg.Chat.ID
-	user := msg.From
-	if user == nil {
-		slog.Warn("Got report without user", "chat_id", chatID)
-		return
-	}
 
-	username := user.UserName
-	if username == "" {
+	// Определяем автора
+	var username string
+	if msg.ForwardFrom != nil && msg.ForwardFrom.UserName != "" {
+		username = msg.ForwardFrom.UserName
+	} else if msg.From != nil && msg.From.UserName != "" {
+		username = msg.From.UserName
+	} else {
 		slog.Warn("Report without username", "chat_id", chatID)
 		return
 	}
 
-	username = "incetro"
+	// username = "incetro"
 
-	text := msg.Text
-	reportParts := strings.SplitN(text, "#отчет", 2)
-	if len(reportParts) < 2 {
+	// Нормализуем текст
+	text := strings.ToLower(strings.ReplaceAll(msg.Text, "ё", "е"))
+	lines := strings.Split(text, "\n")
+	if len(lines) < 2 {
 		s.bot.Send(tgbotapi.NewMessage(chatID, "Неверный формат отчета"))
 		return
 	}
 
-	reportText := strings.TrimSpace(reportParts[1])
-	reportTime := time.Unix(int64(msg.Date), 0).Format("02/01/2006")
+	// Всё, кроме первой строки
+	reportText := strings.Join(lines[1:], "\n")
+	var reportTime string
+	if msg.ForwardDate != 0 {
+		reportTime = time.Unix(int64(msg.ForwardDate), 0).Format("02/01/2006")
+	} else {
+		reportTime = time.Unix(int64(msg.Date), 0).Format("02/01/2006")
+	}
 	uuidStr := uuid.New().String()
 
 	slog.Info("New report", "user", username, "uuid", uuidStr, "text", reportText, "time", reportTime)

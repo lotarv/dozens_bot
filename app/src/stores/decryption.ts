@@ -10,7 +10,6 @@ export const useDecryptionStore = defineStore('decryption', () => {
         try {
             const {data} = await api.get("/users/enc-key")
             key.value = data.key
-            console.log("GOT ENCRYPTION KEY: ", key.value)
         } catch(e) {
             console.error("failed to fetch decryption key: ", e)
         }
