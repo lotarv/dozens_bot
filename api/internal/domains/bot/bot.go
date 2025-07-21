@@ -10,6 +10,7 @@ import (
 	"github.com/lotarv/dozens_bot/internal/domains/bot/repository"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/service"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
+	bank_repo "github.com/lotarv/dozens_bot/internal/domains/piggy_bank/repository"
 	user_repo "github.com/lotarv/dozens_bot/internal/domains/user/repository"
 	"github.com/lotarv/dozens_bot/internal/storage"
 	"github.com/lotarv/dozens_bot/internal/utils"
@@ -20,7 +21,7 @@ type BotController struct {
 	service *service.BotService
 }
 
-func NewBotController(storage *storage.Storage, userRepo *user_repo.UsersRepository) *BotController {
+func NewBotController(storage *storage.Storage, userRepo *user_repo.UsersRepository, bankRepo *bank_repo.PiggyBankRepository) *BotController {
 
 	telegram_bot := createTelegramBot()
 
@@ -28,7 +29,7 @@ func NewBotController(storage *storage.Storage, userRepo *user_repo.UsersReposit
 
 	notion_config := createNotionConfig()
 
-	repo := repository.New(storage, userRepo)
+	repo := repository.New(storage, userRepo, bankRepo)
 
 	service := service.New(repo, telegram_bot, notion_client, notion_config)
 

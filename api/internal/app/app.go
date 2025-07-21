@@ -14,6 +14,7 @@ import (
 	"github.com/lotarv/dozens_bot/internal/domains/documents"
 	"github.com/lotarv/dozens_bot/internal/domains/members"
 	"github.com/lotarv/dozens_bot/internal/domains/notionSync"
+	"github.com/lotarv/dozens_bot/internal/domains/piggy_bank"
 	"github.com/lotarv/dozens_bot/internal/domains/user"
 	"github.com/lotarv/dozens_bot/internal/storage"
 	"github.com/spf13/viper"
@@ -64,9 +65,6 @@ func New() *App {
 	userController := user.NewUserController(router, storage)
 	app.AddController(userController)
 
-	botController := bot.NewBotController(storage, userController.GetRepository())
-	app.AddController(botController)
-
 	membersController := members.NewMembersController(router, storage)
 	app.AddController(membersController)
 
@@ -76,6 +74,11 @@ func New() *App {
 	documentsController := documents.NewDocumentsController(router, storage)
 	app.AddController(documentsController)
 
+	piggyBankController := piggy_bank.NewPiggyBankController(router, storage)
+	app.AddController(piggyBankController)
+
+	botController := bot.NewBotController(storage, userController.GetRepository(), piggyBankController.GetRepository())
+	app.AddController(botController)
 	return app
 }
 

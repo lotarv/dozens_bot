@@ -46,6 +46,11 @@ const routes = [
         path:"/login:",
         name:"login",
         component: () =>  import('../features/loginPage/views/LoginView.vue')
+    },
+    {
+        path:"/piggy-bank",
+        name:"piggy-bank",
+        component:() => import("../features/piggyBank/views/PiggyBankView.vue")
     }
 ]
 
