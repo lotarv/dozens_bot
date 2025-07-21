@@ -100,7 +100,7 @@ function openDeclaration(declaration: DeclarationDocument) {
 <style scoped>
 
 .declarations {
-    @apply flex flex-col p-2 bg-white rounded-[20px] gap-1
+    @apply flex flex-col p-[6px] bg-white rounded-[20px] gap-1
 }
 
 .title {

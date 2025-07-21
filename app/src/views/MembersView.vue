@@ -34,20 +34,16 @@ onBeforeMount(async () => {
                     <div class="member-header">
                         <div class="flex items-center gap-3">
                             <img class="member-photo" :src="member.avatar_url" alt="">
-                            <div class="member-declaration">
-                                <span class="text-[hsl(0,0%,50%)] tracking-[-0.4px]">Декларация</span>
-                                <span>до 26.12.2025</span>
+                            <div class="member-about">
+                                <div class="member-name">{{ member.fio }}</div>
+                                <div class="member-income whitespace-nowrap">
+                                    <span>{{ member.annual_income }}М ₽ / год</span>
+                                    <div class="dot"></div>
+                                    <span class="niche">{{ member.niche }}</span>
+                                </div>
                             </div>
                         </div>
                         <div class="self-start text-2xl"><ArrowIcon/></div>
-                    </div>
-                    <div class="member-about">
-                        <div class="member-name">{{ member.fio }}</div>
-                        <div class="member-income">
-                            <span>{{ member.annual_income }}М ₽ / год</span>
-                            <div class="dot"></div>
-                            <span class="niche">{{ member.niche }}</span>
-                        </div>
                     </div>
                 </RouterLink>
             </div>

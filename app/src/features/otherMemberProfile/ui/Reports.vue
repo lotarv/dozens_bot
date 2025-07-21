@@ -63,7 +63,7 @@ function openReport(username: string, reportID: number) {
 
 <style scoped>
 .reports {
-    @apply flex flex-col rounded-[20px] gap-1 items-center bg-[#EBEBEB]
+    @apply flex flex-col rounded-[20px] gap-1 items-center bg-[#EBEBEB] p-[6px]
 }
 
 .title {
@@ -73,7 +73,7 @@ function openReport(username: string, reportID: number) {
 
 .empty-message {
     font-family: "SF Pro Text";
-    @apply text-left text-base font-medium w-full
+    @apply text-left text-base font-medium w-full pl-4 
 }
 
 .flex-container {

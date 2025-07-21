@@ -37,7 +37,7 @@ export default defineComponent({
 <style scoped>
 /* Базовые стили для prose */
 .markdown-content {
-  @apply max-w-3xl mx-auto p-1;
+  @apply max-w-3xl mx-auto;
 }
 
 /* Стили для заголовков */

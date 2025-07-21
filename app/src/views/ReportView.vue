@@ -48,9 +48,10 @@ onBeforeMount(async() => {
             <div @click="goBack"class="p-2 bg-white w-12 h-12 rounded-full text-[22px] flex items-center justify-center">
                 <ArrowLeft />
             </div>
-            <p class="flex-1 flex justify-between items-center"><span>Отчет</span> <span class="text-base">{{ formatDate(report.creation_date) }}</span></p>
+            <p class="flex-1 flex justify-between items-center"><span>Отчет</span></p>
         </div>
         <div class="px-2">
+            <span class="text-base text-gray-700">{{ formatDate(report.creation_date) }}</span>
             <MarkDownComponent :text="reportText"></MarkDownComponent>
         </div>
     </section>
