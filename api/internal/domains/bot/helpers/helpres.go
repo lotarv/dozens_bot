@@ -143,26 +143,28 @@ func IsLikelyReport(text string) bool {
 	return false
 }
 
-func ExtractReportBody(text string) string {
-	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
-	lines := strings.Split(text, "\n")
+func ExtractReportBody(original string) string {
+	normalized := strings.ToLower(strings.ReplaceAll(original, "ё", "е"))
+	lines := strings.Split(normalized, "\n")
 
 	foundIdx := -1
 	for i, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "#") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
 			foundIdx = i
 			break
 		}
 	}
 
 	if foundIdx != -1 && foundIdx+1 < len(lines) {
-		return strings.Join(lines[foundIdx+1:], "\n")
+		// Используем оригинал, а не нормализованный текст:
+		origLines := strings.Split(original, "\n")
+		return strings.Join(origLines[foundIdx+1:], "\n")
 	}
 
-	// fallback: если хештег не найден или нет текста ниже — вернём всё, кроме первой строки
-	if len(lines) > 1 {
-		return strings.Join(lines[1:], "\n")
+	// fallback: если хештег не найден — всё после первой строки
+	origLines := strings.Split(original, "\n")
+	if len(origLines) > 1 {
+		return strings.Join(origLines[1:], "\n")
 	}
 	return ""
 }
