@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"log/slog"
+
 	"github.com/jmoiron/sqlx"
 	document_types "github.com/lotarv/dozens_bot/internal/domains/documents/types"
 	member_types "github.com/lotarv/dozens_bot/internal/domains/members/types"
@@ -85,8 +86,7 @@ func (r *NotionSyncRepository) SyncDocumentsWithNotion(documents []document_type
 	query := `
 	INSERT INTO documents (id, document_notion_id, text)
 	VALUES ($1,$2,$3)
-	ON CONFLICT(id) DO UPDATE
-	SET text=EXCLUDED.text`
+	ON CONFLICT(id) DO NOTHING`
 	for _, document := range documents {
 		_, err := r.db.Exec(query, document.ID, document.DocumentNotionID, document.Text)
 		if err != nil {

@@ -8,7 +8,7 @@ import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import MarkDownComponent from '@/components/MarkDownComponent.vue';
 import ArrowLeft from '@/components/icons/ArrowLeft.vue';
-import { decryptGoAES } from '@/services/crypto';
+import { decryptGoAES, isEncrypted } from '@/services/crypto';
 import { useDecryptionStore } from '@/stores/decryption';
 const cryptoStore = useDecryptionStore()
 const route = useRoute()
@@ -24,8 +24,13 @@ onBeforeMount(async() => {
     if (!declarationID) return
 
     declaration.value = await DozensTransport.GetDeclarationByID(declarationID)
-    if (declaration.value) {
-        declarationText.value = await decryptGoAES(declaration.value?.text, cryptoStore.key)
+    if (!declaration.value) {
+        return
+    }
+    if (isEncrypted(declaration.value.text)) {
+        declarationText.value = await decryptGoAES(declaration.value.text, cryptoStore.key)
+    } else {
+        declarationText.value = declaration.value.text // оставить как есть
     }
 })
 </script>
