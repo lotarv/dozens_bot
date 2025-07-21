@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
 )
@@ -100,13 +101,13 @@ var knownMembers = []string{
 func generateNamePatterns() []string {
 	var patterns []string
 	for _, fullName := range knownMembers {
-		parts := strings.Fields(strings.ToLower(fullName)) // разбиваем по пробелу
+		parts := strings.Fields(strings.ToLower(strings.ReplaceAll(fullName, "ё", "е")))
 		if len(parts) == 2 {
 			first, last := parts[0], parts[1]
 			patterns = append(patterns,
-				first+" "+last,
-				last+" "+first,
-				last, // только фамилия
+				first+last,
+				last+first,
+				last,
 			)
 		} else if len(parts) == 1 {
 			patterns = append(patterns, parts[0])
@@ -117,28 +118,51 @@ func generateNamePatterns() []string {
 
 func IsLikelyReport(text string) bool {
 	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
+	patterns := generateNamePatterns()
 
+	// 1. Явно указанный тег #отчет
 	if strings.Contains(text, "#отчет") {
 		return true
 	}
 
-	if !strings.HasPrefix(text, "#") {
-		return false
-	}
-
+	// 2. Ищем все слова, начинающиеся с #
 	lines := strings.Split(text, "\n")
-	if len(lines) == 0 {
-		return false
-	}
+	for _, line := range lines {
+		words := strings.Fields(line)
+		for _, word := range words {
+			if strings.HasPrefix(word, "#") {
+				tag := strings.TrimPrefix(word, "#")
 
-	firstLine := strings.TrimPrefix(strings.TrimSpace(lines[0]), "#")
-	firstLine = strings.ToLower(firstLine)
-
-	for _, pattern := range generateNamePatterns() {
-		if strings.HasPrefix(firstLine, pattern) {
-			return true
+				if slices.Contains(patterns, tag) {
+					return true
+				}
+			}
 		}
 	}
 
 	return false
+}
+
+func ExtractReportBody(text string) string {
+	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
+	lines := strings.Split(text, "\n")
+
+	foundIdx := -1
+	for i, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "#") {
+			foundIdx = i
+			break
+		}
+	}
+
+	if foundIdx != -1 && foundIdx+1 < len(lines) {
+		return strings.Join(lines[foundIdx+1:], "\n")
+	}
+
+	// fallback: если хештег не найден или нет текста ниже — вернём всё, кроме первой строки
+	if len(lines) > 1 {
+		return strings.Join(lines[1:], "\n")
+	}
+	return ""
 }

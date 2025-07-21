@@ -532,7 +532,7 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	}
 
 	// Всё, кроме первой строки
-	reportText := strings.Join(lines[1:], "\n")
+	reportText := helpers.ExtractReportBody(msg.Text)
 	var reportTime string
 	if msg.ForwardDate != 0 {
 		reportTime = time.Unix(int64(msg.ForwardDate), 0).Format("02/01/2006")
