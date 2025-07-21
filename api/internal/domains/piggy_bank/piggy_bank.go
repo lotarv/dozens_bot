@@ -1,23 +1,41 @@
-package transport
+package piggy_bank
 
 import (
+	"context"
+	"log/slog"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/lotarv/dozens_bot/internal/domains/piggy_bank/repository"
+	"github.com/lotarv/dozens_bot/internal/domains/piggy_bank/service"
+	"github.com/lotarv/dozens_bot/internal/domains/piggy_bank/transport"
+	"github.com/lotarv/dozens_bot/internal/storage"
 )
 
-type service interface {
+type PiggyBankController struct {
+	repo      *repository.PiggyBankRepository
+	service   *service.PiggyBankService
+	transport *transport.PiggyBankTransport
 }
 
-type PiggyBankTransport struct {
-	router  *chi.Mux
-	service service
-}
+func NewPiggyBankController(router *chi.Mux, storage *storage.Storage) *PiggyBankController {
+	repo := repository.New(storage)
+	service := service.New(repo)
+	transport := transport.New(router, service)
 
-func New(router *chi.Mux, service service) *PiggyBankTransport {
-	return &PiggyBankTransport{
-		router:  router,
-		service: service,
+	bank, err := repo.GetPiggyBank(context.Background(), 1)
+	slog.Info("GOT PIGGY BANK!!", "bank", bank, "error", err)
+
+	return &PiggyBankController{
+		repo:      repo,
+		service:   service,
+		transport: transport,
 	}
 }
 
-func (t *PiggyBankTransport) RegisterRoutes() {
+func (c *PiggyBankController) Build() {
+	c.transport.RegisterRoutes()
+}
+
+func (c *PiggyBankController) Run() {
+
 }
