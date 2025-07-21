@@ -32,7 +32,7 @@ onBeforeMount(async () => {
 })
 </script>
 <template>
-    <section class="absolute inset-0 z-10">
+    <section class="absolute inset-0 z-10 overflow-y-auto">
         <div class="header" :style="{backgroundImage: `url(${member.avatar_url})`}">
             <div class="header-link-and-income">
                 <RouterLink :to="'/members'">
