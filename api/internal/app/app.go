@@ -65,9 +65,6 @@ func New() *App {
 	userController := user.NewUserController(router, storage)
 	app.AddController(userController)
 
-	botController := bot.NewBotController(storage, userController.GetRepository())
-	app.AddController(botController)
-
 	membersController := members.NewMembersController(router, storage)
 	app.AddController(membersController)
 
@@ -80,6 +77,8 @@ func New() *App {
 	piggyBankController := piggy_bank.NewPiggyBankController(router, storage)
 	app.AddController(piggyBankController)
 
+	botController := bot.NewBotController(storage, userController.GetRepository(), piggyBankController.GetRepository())
+	app.AddController(botController)
 	return app
 }
 

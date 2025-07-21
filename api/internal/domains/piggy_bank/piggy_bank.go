@@ -1,9 +1,6 @@
 package piggy_bank
 
 import (
-	"context"
-	"log/slog"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/lotarv/dozens_bot/internal/domains/piggy_bank/repository"
 	"github.com/lotarv/dozens_bot/internal/domains/piggy_bank/service"
@@ -22,12 +19,6 @@ func NewPiggyBankController(router *chi.Mux, storage *storage.Storage) *PiggyBan
 	service := service.New(repo)
 	transport := transport.New(router, service)
 
-	txError := repo.ChangeBankBalance(context.Background(), 1, 801, "За все великолепное", "incetro")
-	slog.Info("CHANGED BALANCE", "txError", txError)
-
-	bank, err := repo.GetPiggyBank(context.Background(), 1)
-	slog.Info("GOT PIGGY BANK!!", "bank", bank, "error", err)
-
 	return &PiggyBankController{
 		repo:      repo,
 		service:   service,
@@ -41,4 +32,8 @@ func (c *PiggyBankController) Build() {
 
 func (c *PiggyBankController) Run() {
 
+}
+
+func (c *PiggyBankController) GetRepository() *repository.PiggyBankRepository {
+	return c.repo
 }

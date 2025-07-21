@@ -7,6 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
+	bank_repo "github.com/lotarv/dozens_bot/internal/domains/piggy_bank/repository"
 	user_types "github.com/lotarv/dozens_bot/internal/domains/user/types"
 	"github.com/lotarv/dozens_bot/internal/storage"
 )
@@ -14,6 +15,7 @@ import (
 type BotRepository struct {
 	db *sqlx.DB
 	UsersRepository
+	PiggyBankRepository
 }
 
 type UsersRepository interface {
@@ -22,10 +24,15 @@ type UsersRepository interface {
 	GetUserByID(ctx context.Context, userID int64) (*user_types.User, error)
 }
 
-func New(storage *storage.Storage, userRepo UsersRepository) *BotRepository {
+type PiggyBankRepository interface {
+	ChangeBankBalance(ctx context.Context, piggyBankID int, amount int, reason string, username string) error
+}
+
+func New(storage *storage.Storage, userRepo UsersRepository, bankRepo *bank_repo.PiggyBankRepository) *BotRepository {
 	return &BotRepository{
-		db:              storage.DB(),
-		UsersRepository: userRepo,
+		db:                  storage.DB(),
+		UsersRepository:     userRepo,
+		PiggyBankRepository: bankRepo,
 	}
 }
 
