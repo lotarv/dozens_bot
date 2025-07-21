@@ -17,6 +17,7 @@ import CurrentDeclaration from '@/components/mainView/CurrentDeclaration.vue';
 import { useMembersStore } from '@/stores/membersStore';
 import { useDecryptionStore } from '@/stores/decryption';
 import { useRouter } from 'vue-router';
+import { useBankStore } from '@/features/piggyBank/model/bankStore';
 interface Member {
     fio: string;
     avatar_url: string;
@@ -27,6 +28,7 @@ interface Member {
 
 const membersStore = useMembersStore()
 const cryptStore = useDecryptionStore()
+const bankStore = useBankStore()
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const router = useRouter()
@@ -65,6 +67,7 @@ onBeforeMount(async () => {
     }
     await membersStore.fetchMembers();
     await createOrUpdateUser();
+    await bankStore.fetchPiggyBank()
 
 });
 </script>
@@ -100,7 +103,7 @@ onBeforeMount(async () => {
                         <MembersAvatars :current_user="current_user" :members="membersStore.members" />
                     </div>
                 </RouterLink>
-                <div class="block inactive">
+                <div class="block" @click="router.push('/piggy-bank')">
                     <div class="block-header">
                         <div class="block-title">Копилка</div>
                         <div class="text-[24px]">
@@ -108,7 +111,9 @@ onBeforeMount(async () => {
                         </div>
                     </div>
                     <div class="block-info">
-                        <div class="status">650 000 ₽</div>
+                        <div class="status">
+                            <span> {{ bankStore.bank?.balance.toLocaleString("ru-RU") }} ₽</span>
+                        </div>
                         <div class="bank-state up">
                             <span class="text-[16px]">
                                 <ArrowUp />

@@ -1,5 +1,6 @@
 import api from "@/services/api"
 import { DeclarationDocument } from "@/features/otherMemberProfile/entities/DeclarationDocument"
+import { PiggyBank } from "@/features/piggyBank/entities/PiggyBank"
 
 export class DozensTransport {
     static async GetDeclarations(username: string): Promise<DeclarationDocument[]> {
@@ -18,6 +19,15 @@ export class DozensTransport {
             return data
         } catch(error) {
             console.error("failed to get declarations: ", error)
+            return null
+        }
+    }
+    static async GetPiggyBank(): Promise<PiggyBank | null> {
+        try {
+            const {data} = await api.get<PiggyBank>('/piggy-bank')
+            return data
+        } catch(e) {
+            console.error("failed to get piggy bank: ", e)
             return null
         }
     }
