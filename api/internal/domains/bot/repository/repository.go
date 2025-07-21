@@ -136,3 +136,13 @@ func (r *BotRepository) SaveDocument(id, encryptedText string) error {
 	_, err := r.db.Exec(query, id, encryptedText)
 	return err
 }
+
+func (r *BotRepository) SetEncryptedText(uuidStr string, encryptedText string) error {
+	query := `
+		UPDATE documents 
+		SET text=$1
+		WHERE id=$2
+	`
+	_, err := r.db.Exec(query, encryptedText, uuidStr)
+	return err
+}

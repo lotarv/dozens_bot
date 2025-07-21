@@ -36,6 +36,7 @@ type repository interface {
 	GetUserDozen(userID int64) (bot_types.Dozen, error)
 
 	SaveDocument(id, encryptedText string) error
+	SetEncryptedText(uuidStr string, encryptedText string) error
 }
 
 type BotService struct {
@@ -518,6 +519,7 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 		username = msg.From.UserName
 	} else {
 		slog.Warn("Report without username", "chat_id", chatID)
+		s.replyTo(msg, "Ошибка при определении автора отчета")
 		return
 	}
 
@@ -562,12 +564,6 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 		return
 	}
 
-	if err := s.repo.SaveDocument(uuidStr, encryptedText); err != nil {
-		slog.Error("Failed to save encrypted document", "err", err)
-		s.replyTo(msg, "Ошибка при сохранении документа в базу")
-		return
-	}
-
 	//2.Создание документа
 	if err := s.createDocument(uuidStr); err != nil {
 		slog.Error("Failed to create document", "err", err)
@@ -580,7 +576,14 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 		slog.Error("Failed to sync documents", "err", err)
 	}
 
-	//4.Получаем Notion ID документа
+	//4. Подставляем текст в БД
+
+	if err := s.repo.SetEncryptedText(uuidStr, encryptedText); err != nil {
+		slog.Error("failed to set encrypted text: ", "error", err)
+		s.replyTo(msg, "Ошибка при создании документа в базе")
+		return
+	}
+	//5.Получаем Notion ID документа
 	docNotionID, err := s.repo.GetDocumentNotionId(uuidStr)
 	if err != nil {
 		slog.Error("Failed to get document notion ID", "err", err)
@@ -588,7 +591,7 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 		return
 	}
 
-	// 5. Создание отчёта
+	// 6. Создание отчёта
 	if err := s.createReport(docNotionID, authorNotionID, reportTime); err != nil {
 		slog.Error("Failed to create report", "err", err)
 		s.replyTo(msg, "Ошибка при создании отчета в notion")
@@ -596,7 +599,7 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 		return
 	}
 
-	// 6. Синхронизация отчётов
+	// 7. Синхронизация отчётов
 	if err := helpers.TriggerSyncReports(); err != nil {
 		slog.Error("Failed to sync reports", "err", err)
 		s.replyTo(msg, "Отчет создан в notion, но синхронизация не удалась")
