@@ -94,6 +94,21 @@ section {
   overflow: hidden;
 }
 
+/* Градиент под блюром */
+.blur-name-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+  z-index: 0;
+}
+
+/* Контент поверх градиента */
+.blur-name-box > * {
+  position: relative;
+  z-index: 1;
+}
+
 
 .member-income{
     @apply flex flex-row gap-2 text-[16px] font-semibold tracking-[-0.4px] leading-6 items-center rounded-full bg-[hsla(0,0%,100%,0.7)] px-3 py-2;
