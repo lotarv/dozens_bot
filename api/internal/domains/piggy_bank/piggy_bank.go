@@ -22,6 +22,9 @@ func NewPiggyBankController(router *chi.Mux, storage *storage.Storage) *PiggyBan
 	service := service.New(repo)
 	transport := transport.New(router, service)
 
+	txError := repo.ChangeBankBalance(context.Background(), 1, 801, "За все великолепное", "incetro")
+	slog.Info("CHANGED BALANCE", "txError", txError)
+
 	bank, err := repo.GetPiggyBank(context.Background(), 1)
 	slog.Info("GOT PIGGY BANK!!", "bank", bank, "error", err)
 

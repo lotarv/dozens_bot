@@ -11,7 +11,7 @@ type Transaction struct {
 	Member TransactionMember `json:"member"`
 	Date   time.Time         `json:"created_at" db:"created_at"`
 	Amount int               `json:"amount" db:"amount"`
-	Reason int               `json:"reason" db:"reason"`
+	Reason string            `json:"reason" db:"reason"`
 }
 
 type PiggyBank struct {

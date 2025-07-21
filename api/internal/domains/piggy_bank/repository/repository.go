@@ -67,7 +67,7 @@ func (r *PiggyBankRepository) GetPiggyBank(ctx context.Context, piggyBankID int)
 	//2. Получаем транзакции
 	var rawTxns []struct {
 		Amount    int       `db:"amount"`
-		Reason    int       `db:"reason"`
+		Reason    string    `db:"reason"`
 		CreatedAt time.Time `db:"created_at"`
 		FullName  string    `db:"fio"`
 		AvatarUrl string    `db:"avatar_url"`
