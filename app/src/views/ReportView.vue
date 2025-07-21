@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import MarkDownComponent from '@/components/MarkDownComponent.vue';
 import { computed, onBeforeMount, ref } from 'vue';
 import ArrowLeft from '@/components/icons/ArrowLeft.vue';
-import { decryptGoAES } from '@/services/crypto';
+import { decryptGoAES, isEncrypted } from '@/services/crypto';
 const router = useRouter()
 const route = useRoute()
 const reportsStore = useReportsStore()
@@ -34,8 +34,13 @@ function goBack() {
 }
 
 onBeforeMount(async() => {
-    reportText.value = await decryptGoAES(report.value.text, cryptoStore.key)
+    if (isEncrypted(report.value.text)) {
+        reportText.value = await decryptGoAES(report.value.text, cryptoStore.key)
+    } else {
+        reportText.value = report.value.text // оставить как есть
+    }
 })
+
 </script>
 <template>
     <section class="p-1 flex flex-col font-medium">

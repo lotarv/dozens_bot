@@ -126,3 +126,13 @@ func (r *BotRepository) GetUserDozen(userID int64) (bot_types.Dozen, error) {
 
 	return dozen, nil
 }
+
+func (r *BotRepository) SaveDocument(id, encryptedText string) error {
+	query := `
+		INSERT INTO documents (id, text)
+		VALUES ($1, $2)
+		ON CONFLICT (id) DO UPDATE SET text = EXCLUDED.text
+	`
+	_, err := r.db.Exec(query, id, encryptedText)
+	return err
+}

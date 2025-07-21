@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
 	user_types "github.com/lotarv/dozens_bot/internal/domains/user/types"
+	"github.com/lotarv/dozens_bot/internal/utils/crypto"
 )
 
 type repository interface {
@@ -32,6 +34,8 @@ type repository interface {
 	AddUserToDozen(userID int64, dozenID int) error
 	CreateDozen(dozen bot_types.Dozen) error
 	GetUserDozen(userID int64) (bot_types.Dozen, error)
+
+	SaveDocument(id, encryptedText string) error
 }
 
 type BotService struct {
@@ -445,7 +449,7 @@ func (s *BotService) handleJoinReset(userID int64) {
 	}
 
 }
-func (s *BotService) createDocument(id, text string) error {
+func (s *BotService) createDocument(id string) error {
 	page := &notionapi.PageCreateRequest{
 		Parent: notionapi.Parent{
 			Type:       "database_id",
@@ -456,13 +460,6 @@ func (s *BotService) createDocument(id, text string) error {
 				Title: []notionapi.RichText{
 					{
 						Text: &notionapi.Text{Content: id},
-					},
-				},
-			},
-			"Текст": notionapi.RichTextProperty{
-				RichText: []notionapi.RichText{
-					{
-						Text: &notionapi.Text{Content: text},
 					},
 				},
 			},
@@ -504,6 +501,12 @@ func (s *BotService) createReport(documentID, authorID, date string) error {
 	return err
 }
 
+func (s *BotService) replyTo(msg *tgbotapi.Message, text string) {
+	reply := tgbotapi.NewMessage(msg.Chat.ID, text)
+	reply.ReplyToMessageID = msg.MessageID
+	s.bot.Send(reply)
+}
+
 func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	chatID := msg.Chat.ID
 
@@ -518,13 +521,11 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 		return
 	}
 
-	// username = "incetro"
-
 	// Нормализуем текст
 	text := strings.ToLower(strings.ReplaceAll(msg.Text, "ё", "е"))
 	lines := strings.Split(text, "\n")
-	if len(lines) < 2 {
-		s.bot.Send(tgbotapi.NewMessage(chatID, "Неверный формат отчета"))
+	if len(lines) < 1 {
+		s.replyTo(msg, "Неверный формат отчета: отсутствует содержимое")
 		return
 	}
 
@@ -544,13 +545,33 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	authorNotionID, err := s.repo.GetMemberNotionId(username)
 	if err != nil {
 		slog.Error("Failed to get author notion ID", "err", err)
-		s.bot.Send(tgbotapi.NewMessage(chatID, "Ошибка при определении автора."))
+		s.replyTo(msg, "Ошибка при определении автора отчета")
 		return
 	}
+
+	//1.1 Шифруем данные
+	//TODO: брать код десятки текущего пользователя
+	pepper := os.Getenv("ENCRYPTION_PEPPER")
+	dozenCode := os.Getenv("ONLY_DOZEN_CODE")
+	passphrase := dozenCode + pepper
+
+	encryptedText, err := crypto.Encrypt(reportText, passphrase)
+	if err != nil {
+		slog.Error("failed to encrypt reportText", "err", err)
+		s.replyTo(msg, "Не удалось выполнить шифрование отчета. Попробуйте еще раз")
+		return
+	}
+
+	if err := s.repo.SaveDocument(uuidStr, encryptedText); err != nil {
+		slog.Error("Failed to save encrypted document", "err", err)
+		s.replyTo(msg, "Ошибка при сохранении документа в базу")
+		return
+	}
+
 	//2.Создание документа
-	if err := s.createDocument(uuidStr, reportText); err != nil {
+	if err := s.createDocument(uuidStr); err != nil {
 		slog.Error("Failed to create document", "err", err)
-		s.bot.Send(tgbotapi.NewMessage(chatID, "Ошибка при создании документа"))
+		s.replyTo(msg, "Ошибка при создании документа в Notion")
 		return
 	}
 
@@ -563,21 +584,23 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	docNotionID, err := s.repo.GetDocumentNotionId(uuidStr)
 	if err != nil {
 		slog.Error("Failed to get document notion ID", "err", err)
-		s.bot.Send(tgbotapi.NewMessage(chatID, "Ошибка при поиске документа."))
+		s.replyTo(msg, "Ошибка при получении notion-id документа")
 		return
 	}
 
 	// 5. Создание отчёта
 	if err := s.createReport(docNotionID, authorNotionID, reportTime); err != nil {
 		slog.Error("Failed to create report", "err", err)
-		s.bot.Send(tgbotapi.NewMessage(chatID, "Ошибка при создании отчёта."))
+		s.replyTo(msg, "Ошибка при создании отчета в notion")
+
 		return
 	}
 
 	// 6. Синхронизация отчётов
 	if err := helpers.TriggerSyncReports(); err != nil {
 		slog.Error("Failed to sync reports", "err", err)
+		s.replyTo(msg, "Отчет создан в notion, но синхронизация не удалась")
 	}
 
-	s.bot.Send(tgbotapi.NewMessage(chatID, "Отчёт успешно принят ✅"))
+	s.replyTo(msg, "Отчёт успешно принят ✅")
 }

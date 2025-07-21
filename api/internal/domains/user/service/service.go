@@ -46,7 +46,7 @@ func (s *UserService) GetUserByID(ctx context.Context, userID int64) (*types.Use
 	return s.repo.GetUserByID(ctx, userID)
 }
 
-func (s *UserService) GetEncryptionKey(ctx context.Context, userID int64) (string, error) {
+func (s *UserService) GetDozenCode(ctx context.Context, userID int64) (string, error) {
 	user, err := s.GetUserByID(ctx, userID)
 	if err != nil {
 		return "", err
@@ -59,7 +59,7 @@ func (s *UserService) GetEncryptionKey(ctx context.Context, userID int64) (strin
 		return "", err
 	}
 
-	return os.Getenv("ENCRYPTION_KEY"), nil
+	return os.Getenv("ONLY_DOZEN_CODE"), nil
 }
 
 func (s *UserService) GetMemberByUsername(ctx context.Context, username string) (member_types.Member, error) {

@@ -40,3 +40,7 @@ export async function decryptGoAES( encrypted: string, password: string): Promis
 
     return new TextDecoder().decode(decrypted);
 }
+
+export function isEncrypted(text: string): boolean {
+  return typeof text === "string" && text.split(":").length === 3
+}
