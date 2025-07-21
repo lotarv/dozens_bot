@@ -91,7 +91,7 @@ onBeforeMount(async () => {
     font-family: 'SF Pro Display', Roboto, emoji, sans-serif;
 }
 .member-income{
-    @apply flex flex-row gap-1 text-[14px] font-[500] tracking-[-0.25px] leading-5
+    @apply flex flex-row gap-1 text-[14px] font-normal tracking-[-0.25px] leading-5
 }
 .dot {
     @apply w-[4px] h-[4px] bg-black inline-block rounded-[50%] self-center
