@@ -41,6 +41,12 @@ const isNextMeeting = computed(() => {
     const now = new Date();
     return meetingDate > now;
 })
+
+function openLink(url: string) {
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
 </script>
 <template>
     <div class="card" :style="{
@@ -62,7 +68,7 @@ const isNextMeeting = computed(() => {
             </div>
             <div class="meeting-date">{{ formatDateTime(meeting.date) }}</div>
             <div class="meeting-location">
-                <span>{{ meeting.location }}</span>
+                <span @click="openLink(meeting.map_url)">{{ meeting.location }}</span>
                 <span class="text-[24px]"><ArrowIcon></ArrowIcon></span>
             </div>
         </div>
