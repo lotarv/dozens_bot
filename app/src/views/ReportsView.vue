@@ -91,7 +91,7 @@ function openReport(username: string, reportID: number) {
 
 </script>
 <template>
-    <section class="p-1 flex flex-col font-medium">
+    <section class="p-1 flex flex-col font-medium min-h-screen">
         <div class="header">
             <RouterLink :to="'/'">
                 <div class="p-2 bg-white w-12 h-12 rounded-full text-[22px] flex items-center justify-center">
@@ -118,7 +118,7 @@ function openReport(username: string, reportID: number) {
             </div>
         </div>
         </div>
-        <div v-else class="flex flex-col items-center justify-center">
+        <div v-else class="flex-1 flex flex-col items-center justify-center h-screen">
             <img src="../assets/images/logo.png" alt="" class="h-12 w-12">
             <span>Загрузка отчетов...</span>
         </div>
