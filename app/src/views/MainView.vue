@@ -61,12 +61,12 @@ async function createOrUpdateUser() {
 
 onBeforeMount(async () => {
     window.Telegram.WebApp.disableVerticalSwipes();
+    await createOrUpdateUser();
     await cryptStore.fetchKey();
     if (cryptStore.key == "") {
         router.push({name: "login"})
     }
     await membersStore.fetchMembers();
-    await createOrUpdateUser();
     await bankStore.fetchPiggyBank()
 
 });
