@@ -27,11 +27,13 @@ type TransactionSession struct {
 var transactionSessions = make(map[int64]*TransactionSession)
 
 func (s *BotService) StartNewTransaction(userID int64) {
-	msg := tgbotapi.NewMessage(userID, "Что вы хотите сделать?")
+	msg := tgbotapi.NewMessage(userID, "Что хотим сделать?")
 	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("➕ Пополнить", "start_deposit"),
-			tgbotapi.NewInlineKeyboardButtonData("➖ Списать", "start_withdraw"),
+			tgbotapi.NewInlineKeyboardButtonData("Добавить штраф", "start_deposit"),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Потратить", "start_withdraw"),
 		),
 	)
 	s.bot.Send(msg)
