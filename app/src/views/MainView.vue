@@ -58,7 +58,7 @@ async function createOrUpdateUser() {
         console.error('Authentication failed:', err);
     }
 }
-
+const isReady = ref(false)
 onBeforeMount(async () => {
     window.Telegram.WebApp.disableVerticalSwipes();
     await createOrUpdateUser();
@@ -68,12 +68,13 @@ onBeforeMount(async () => {
     }
     await membersStore.fetchMembers();
     await bankStore.fetchPiggyBank()
+    isReady.value = true
 
 });
 </script>
 
 <template>
-    <section class="flex flex-col p-1 gap-1" v-if="!membersStore.isLoading">
+    <section class="flex flex-col p-1 gap-1" v-if="isReady">
         <div class="header">
             <div class="cur-user-name">{{ shortenLastName(current_user.fio) }}</div>
             <div class="cur-user-benefits">
