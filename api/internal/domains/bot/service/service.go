@@ -165,11 +165,13 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 		}
 		s.askForTransactionMember(userID)
 	case "start_withdraw":
+		username := cb.From.UserName
 		transactionSessions[userID] = &TransactionSession{
-			Step:      AwaitingMember,
-			IsDeposit: false,
+			Step:           AwaitingAmount,
+			IsDeposit:      false,
+			MemberUsername: username,
 		}
-		s.askForTransactionMember(userID)
+		s.bot.Send(tgbotapi.NewMessage(userID, "Введите сумму:"))
 
 	default:
 		if strings.HasPrefix(cb.Data, "select_member_") {

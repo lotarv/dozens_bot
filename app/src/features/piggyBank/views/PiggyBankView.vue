@@ -14,8 +14,8 @@ onMounted(() => {
     console.log(bankStore.bank)
 })
 
-function openBot() {
-    DozensTransport.NewBankTransaction()
+async function openBot() {
+    await DozensTransport.NewBankTransaction()
     const url = `https://t.me/${botName}`;
     if (window.Telegram && window.Telegram.WebApp) {
         Telegram.WebApp.openTelegramLink(url);

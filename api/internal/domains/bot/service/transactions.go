@@ -54,7 +54,11 @@ func (s *BotService) handleTransactionStep(msg *tgbotapi.Message, session *Trans
 		}
 		session.Amount = amount
 		session.Step = AwaitingReason
-		s.bot.Send(tgbotapi.NewMessage(userID, "Введите причину изменения баланса копилки: "))
+		if session.IsDeposit {
+			s.bot.Send(tgbotapi.NewMessage(userID, "За что штраф?"))
+		} else {
+			s.bot.Send(tgbotapi.NewMessage(userID, "Укажите цель списания средств:"))
+		}
 	case AwaitingReason:
 		reason := text
 
@@ -83,7 +87,7 @@ func (s *BotService) askForTransactionMember(userID int64) {
 		btn := tgbotapi.NewInlineKeyboardButtonData(m.FullName, "select_member_"+m.Username)
 		buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(btn))
 	}
-	msg := tgbotapi.NewMessage(userID, "Чей штраф: ")
+	msg := tgbotapi.NewMessage(userID, "Чей штраф? ")
 	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons...)
 	s.bot.Send(msg)
 
