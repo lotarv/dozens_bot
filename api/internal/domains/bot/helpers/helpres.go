@@ -143,7 +143,7 @@ func generateNamePatterns() []string {
 // }
 
 func IsLikelyReport(text string) bool {
-	return true
+	return len(text) > 100
 }
 func ExtractReportBody(original string) string {
 	normalized := strings.ToLower(strings.ReplaceAll(original, "ё", "е"))
