@@ -1,8 +1,6 @@
 package service
 
 import (
-	"log/slog"
-
 	"github.com/lotarv/dozens_bot/internal/domains/documents/types"
 )
 
@@ -44,8 +42,6 @@ func (s *DocumentsService) GetReports(username string) (*types.ReportsResponse, 
 	if err != nil {
 		return nil, err
 	}
-	slog.Info("show map", "documentsMap", documentsMap)
-
 	var reports []types.ReportItem
 	for _, r := range reportsRaw {
 		doc, ok := documentsMap[r.DocumentID]

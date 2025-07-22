@@ -2,7 +2,6 @@ package repository
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -75,7 +74,6 @@ func (r *DocumentsRepository) GetReportDocuments(reports []types.Report) (map[st
 		params[i] = fmt.Sprintf("$%d", i+1)
 	}
 	query += strings.Join(params, ",") + ")"
-	slog.Info("query", "query", query, "ids", ids)
 
 	// Выполняем запрос
 	rows, err := r.db.Query(query, ids...)

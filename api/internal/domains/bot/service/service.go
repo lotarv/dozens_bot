@@ -225,9 +225,7 @@ func (s *BotService) handleStartRegistered(msg *tgbotapi.Message) {
 }
 
 func (s *BotService) handleUnknown(msg *tgbotapi.Message) {
-	chatID := msg.Chat.ID
-	message := tgbotapi.NewMessage(chatID, "Команда не распознана. Используйте /start.")
-	s.bot.Send(message)
+	s.replyTo(msg, "Команда не распознана. Используйте /start")
 }
 
 func (s *BotService) createDozen(usr *tgbotapi.User, userID int64) {
