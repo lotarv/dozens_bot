@@ -18,3 +18,8 @@ type Dozen struct {
 	Name    string `db:"name" json:"name"`
 	Captain int64  `db:"captain" json:"captain"`
 }
+
+type MemberDB struct {
+	FullName string `db:"fio"`
+	Username string `db:"username"`
+}

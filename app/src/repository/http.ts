@@ -31,4 +31,12 @@ export class DozensTransport {
             return null
         }
     }
+
+    static async NewBankTransaction() {
+        try {
+            await api.post('/bot/new-transaction')
+        } catch(error) {
+            console.error("failed to open bot: ", error)
+        }
+    }
 }

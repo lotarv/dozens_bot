@@ -4,12 +4,27 @@ import { useBankStore } from '../model/bankStore';
 import CrossIcon from '../ui/icons/CrossIcon.vue';
 import { onMounted } from 'vue';
 import { formatDateTime } from '@/services/helpers';
+import { DozensTransport } from '@/repository/http';
+
 const baseURL = import.meta.env.VITE_BASE_URL
 const bankStore = useBankStore()
+const botName = import.meta.env.VITE_BOT_NAME
 
 onMounted(() => {
     console.log(bankStore.bank)
 })
+
+function openBot() {
+    DozensTransport.NewBankTransaction()
+    const url = `https://t.me/${botName}`;
+    if (window.Telegram && window.Telegram.WebApp) {
+        Telegram.WebApp.openTelegramLink(url);
+        Telegram.WebApp.close();
+    } else {
+        window.location.href = url;
+    }
+}
+
 </script>
 
 <template>
@@ -25,7 +40,7 @@ onMounted(() => {
                 <span class="font-medium text-[28px] leading-7 tracking-[-0.4px]">{{ bankStore.bank?.balance.toLocaleString("ru-RU") }} ₽</span>
                 <span class="font-semibold text-base tracking-[-0.4px]">Сейчас в копилке</span>
             </div>
-            <div class="rounded-full bg-[#EBEBEB] flex items-center justify-center h-12 w-12">
+            <div class="rounded-full bg-[#EBEBEB] flex items-center justify-center h-12 w-12" @click="openBot">
                 <CrossIcon class="text-3xl"></CrossIcon>
             </div>
         </div>

@@ -153,3 +153,13 @@ func (r *BotRepository) SetEncryptedText(uuidStr string, encryptedText string) e
 	_, err := r.db.Exec(query, encryptedText, uuidStr)
 	return err
 }
+
+func (r *BotRepository) GetMembers() ([]bot_types.MemberDB, error) {
+	var members []bot_types.MemberDB
+	query := `SELECT fio, username FROM members`
+	err := r.db.Select(&members, query)
+	if err != nil {
+		return []bot_types.MemberDB{}, err
+	}
+	return members, nil
+}

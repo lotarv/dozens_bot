@@ -35,8 +35,12 @@ type repository interface {
 	CreateDozen(dozen bot_types.Dozen) error
 	GetUserDozen(userID int64) (bot_types.Dozen, error)
 
+	GetMembers() ([]bot_types.MemberDB, error)
+
 	SaveDocument(id, encryptedText string) error
 	SetEncryptedText(uuidStr string, encryptedText string) error
+
+	ChangeBankBalance(ctx context.Context, piggyBankID int, amount int, reason string, username string) error
 }
 
 type BotService struct {
@@ -76,6 +80,13 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 	chatID := msg.Chat.ID
 	userID := msg.From.ID
 	text := strings.TrimSpace(msg.Text)
+
+	//0. Проверка на активную сессию транзакции
+
+	if session, ok := transactionSessions[userID]; ok && session.Step != Idle {
+		s.handleTransactionStep(msg, session)
+		return
+	}
 
 	//1.Проверяем текущее состояние пользователя
 	state, err := s.repo.GetUserState(userID)
@@ -147,7 +158,30 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 		s.createDozen(cb.From, userID)
 	case "create_name_approve":
 		s.handleDozenNameApprove(userID)
+	case "start_deposit":
+		transactionSessions[userID] = &TransactionSession{
+			Step:      AwaitingMember,
+			IsDeposit: true,
+		}
+		s.askForTransactionMember(userID)
+	case "start_withdraw":
+		transactionSessions[userID] = &TransactionSession{
+			Step:      AwaitingMember,
+			IsDeposit: false,
+		}
+		s.askForTransactionMember(userID)
+
 	default:
+		if strings.HasPrefix(cb.Data, "select_member_") {
+			username := strings.TrimPrefix(cb.Data, "select_member_")
+			if session, ok := transactionSessions[userID]; ok && session.Step == AwaitingMember {
+				session.MemberUsername = username
+				session.Step = AwaitingAmount
+
+				s.bot.Send(tgbotapi.NewMessage(userID, "Введите сумму:"))
+				return
+			}
+		}
 		s.bot.Send(tgbotapi.NewMessage(chatID, "Неизвестное действие"))
 	}
 }

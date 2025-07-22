@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/v5"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jomei/notionapi"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/repository"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/service"
+	"github.com/lotarv/dozens_bot/internal/domains/bot/transport"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
 	bank_repo "github.com/lotarv/dozens_bot/internal/domains/piggy_bank/repository"
 	user_repo "github.com/lotarv/dozens_bot/internal/domains/user/repository"
@@ -17,11 +19,12 @@ import (
 )
 
 type BotController struct {
-	repo    *repository.BotRepository
-	service *service.BotService
+	repo      *repository.BotRepository
+	service   *service.BotService
+	transport *transport.BotTransport
 }
 
-func NewBotController(storage *storage.Storage, userRepo *user_repo.UsersRepository, bankRepo *bank_repo.PiggyBankRepository) *BotController {
+func NewBotController(storage *storage.Storage, userRepo *user_repo.UsersRepository, bankRepo *bank_repo.PiggyBankRepository, router *chi.Mux) *BotController {
 
 	telegram_bot := createTelegramBot()
 
@@ -33,9 +36,12 @@ func NewBotController(storage *storage.Storage, userRepo *user_repo.UsersReposit
 
 	service := service.New(repo, telegram_bot, notion_client, notion_config)
 
+	transport := transport.New(router, service)
+
 	return &BotController{
-		repo:    repo,
-		service: service,
+		repo:      repo,
+		service:   service,
+		transport: transport,
 	}
 
 }
@@ -94,6 +100,7 @@ func createNotionConfig() bot_types.NotionConfig {
 }
 
 func (c *BotController) Build() {
+	c.transport.RegisterRoutes()
 
 }
 
