@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"slices"
 	"strings"
 	"time"
 )
@@ -116,33 +115,36 @@ func generateNamePatterns() []string {
 	return patterns
 }
 
+// func IsLikelyReport(text string) bool {
+// 	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
+// 	patterns := generateNamePatterns()
+
+// 	// 1. Явно указанный тег #отчет
+// 	if strings.Contains(text, "#отчет") {
+// 		return true
+// 	}
+
+// 	// 2. Ищем все слова, начинающиеся с #
+// 	lines := strings.Split(text, "\n")
+// 	for _, line := range lines {
+// 		words := strings.Fields(line)
+// 		for _, word := range words {
+// 			if strings.HasPrefix(word, "#") {
+// 				tag := strings.TrimPrefix(word, "#")
+
+// 				if slices.Contains(patterns, tag) {
+// 					return true
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	return false
+// }
+
 func IsLikelyReport(text string) bool {
-	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
-	patterns := generateNamePatterns()
-
-	// 1. Явно указанный тег #отчет
-	if strings.Contains(text, "#отчет") {
-		return true
-	}
-
-	// 2. Ищем все слова, начинающиеся с #
-	lines := strings.Split(text, "\n")
-	for _, line := range lines {
-		words := strings.Fields(line)
-		for _, word := range words {
-			if strings.HasPrefix(word, "#") {
-				tag := strings.TrimPrefix(word, "#")
-
-				if slices.Contains(patterns, tag) {
-					return true
-				}
-			}
-		}
-	}
-
-	return false
+	return true
 }
-
 func ExtractReportBody(original string) string {
 	normalized := strings.ToLower(strings.ReplaceAll(original, "ё", "е"))
 	lines := strings.Split(normalized, "\n")
