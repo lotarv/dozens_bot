@@ -571,7 +571,7 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	if msg.ForwardFrom != nil && msg.ForwardFrom.UserName != "" {
 		username = msg.ForwardFrom.UserName
 	} else if msg.From != nil && msg.From.UserName != "" {
-		username = msg.From.UserName
+		username = "MikhailStep"
 	} else {
 		slog.Warn("Report without username", "chat_id", chatID)
 		s.replyTo(msg, "Ошибка при определении автора отчета")
