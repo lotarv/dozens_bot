@@ -69,6 +69,7 @@ onBeforeMount(async () => {
     await membersStore.fetchMembers();
     await bankStore.fetchPiggyBank()
     isReady.value = true
+    
 
 });
 </script>
