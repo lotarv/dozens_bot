@@ -11,7 +11,6 @@ export const useDecryptionStore = defineStore('decryption', () => {
         try {
             const {data} = await api.get("/users/dozen-code")
             key.value = `${data.code}${pepper}`
-            console.log("ENCRYPTION KEY: ", key.value)
         } catch(e) {
             console.error("failed to fetch decryption key: ", e)
         }

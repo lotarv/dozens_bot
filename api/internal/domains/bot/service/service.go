@@ -158,17 +158,38 @@ func (s *BotService) handleCallback(cb *tgbotapi.CallbackQuery) {
 		s.createDozen(cb.From, userID)
 	case "create_name_approve":
 		s.handleDozenNameApprove(userID)
-	case "start_deposit":
+	case "start_penalty":
 		transactionSessions[userID] = &TransactionSession{
 			Step:      AwaitingMember,
-			IsDeposit: true,
+			IsPenalty: true,
+			IsDeposit: false,
 		}
 		s.askForTransactionMember(userID)
+	case "start_deposit":
+		user, err := s.repo.GetUserByID(context.Background(), userID)
+		if err != nil {
+			s.bot.Send(tgbotapi.NewMessage(userID, "Участник десятки не определен"))
+			return
+		}
+		username := user.Username
+		transactionSessions[userID] = &TransactionSession{
+			Step:           AwaitingAmount,
+			IsPenalty:      false,
+			IsDeposit:      true,
+			MemberUsername: username,
+		}
+		s.bot.Send(tgbotapi.NewMessage(userID, "Введите сумму:"))
 	case "start_withdraw":
-		username := cb.From.UserName
+		user, err := s.repo.GetUserByID(context.Background(), userID)
+		if err != nil {
+			s.bot.Send(tgbotapi.NewMessage(userID, "Участник десятки не определен"))
+			return
+		}
+		username := user.Username
 		transactionSessions[userID] = &TransactionSession{
 			Step:           AwaitingAmount,
 			IsDeposit:      false,
+			IsPenalty:      false,
 			MemberUsername: username,
 		}
 		s.bot.Send(tgbotapi.NewMessage(userID, "Введите сумму:"))

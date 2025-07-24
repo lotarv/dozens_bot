@@ -20,6 +20,7 @@ const (
 type TransactionSession struct {
 	Step           TransactionStep
 	IsDeposit      bool
+	IsPenalty      bool
 	Amount         int
 	MemberUsername string
 }
@@ -30,7 +31,10 @@ func (s *BotService) StartNewTransaction(userID int64) {
 	msg := tgbotapi.NewMessage(userID, "Что хотим сделать?")
 	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Добавить штраф", "start_deposit"),
+			tgbotapi.NewInlineKeyboardButtonData("Добавить штраф", "start_penalty"),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Добавить (не штраф)", "start_deposit"),
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Потратить", "start_withdraw"),
@@ -51,13 +55,15 @@ func (s *BotService) handleTransactionStep(msg *tgbotapi.Message, session *Trans
 			s.bot.Send(tgbotapi.NewMessage(userID, "Введите корректную положительную сумму"))
 			return
 		}
-		if !session.IsDeposit {
+		if !(session.IsDeposit || session.IsPenalty) {
 			amount = -amount
 		}
 		session.Amount = amount
 		session.Step = AwaitingReason
-		if session.IsDeposit {
+		if session.IsPenalty {
 			s.bot.Send(tgbotapi.NewMessage(userID, "За что штраф?"))
+		} else if session.IsDeposit {
+			s.bot.Send(tgbotapi.NewMessage(userID, "Укажите причину"))
 		} else {
 			s.bot.Send(tgbotapi.NewMessage(userID, "Укажите цель списания средств:"))
 		}
@@ -89,7 +95,8 @@ func (s *BotService) askForTransactionMember(userID int64) {
 		btn := tgbotapi.NewInlineKeyboardButtonData(m.FullName, "select_member_"+m.Username)
 		buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(btn))
 	}
-	msg := tgbotapi.NewMessage(userID, "Чей штраф? ")
+
+	msg := tgbotapi.NewMessage(userID, "Чей штраф?")
 	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons...)
 	s.bot.Send(msg)
 
