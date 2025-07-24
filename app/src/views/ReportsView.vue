@@ -98,7 +98,10 @@ function openReport(username: string, reportID: number) {
                     <ArrowLeft />
                 </div>
             </RouterLink>
-            <span>Отчеты</span>
+            <div class="flex justify-between w-full flex-1 items-center">
+              <span>Отчеты</span>
+              <span v-if="isReady" class="text-[32px] opacity-[13%]">{{ allReports.length }}</span>
+            </div>
         </div>
 
         <div class="reports-container" v-if="isReady">

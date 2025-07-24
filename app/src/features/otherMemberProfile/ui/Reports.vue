@@ -38,7 +38,11 @@ function openReport(username: string, reportID: number) {
 </script>
 <template>
     <div class="reports">
-        <div class="title">Отчеты</div>
+        <div class="title flex justify-between">
+            <span>Отчеты</span>
+            <span v-if="props.reports.length > 0" class="opacity-[13%]">{{ props.reports.length }}</span>
+            
+        </div>
 
         <div v-if="props.reports.length === 0" class="empty-message">
             У этого участника пока нет отчётов
