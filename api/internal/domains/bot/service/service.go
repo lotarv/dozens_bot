@@ -80,11 +80,51 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 	chatID := msg.Chat.ID
 	userID := msg.From.ID
 	text := strings.TrimSpace(msg.Text)
+	timestamp := msg.ForwardDate
+
+	if timestamp == 0 {
+		timestamp = msg.Date
+	}
+
+	bufKey := fmt.Sprintf("%d_%d", userID, timestamp)
 
 	//0. Проверка на активную сессию транзакции
 
 	if session, ok := transactionSessions[userID]; ok && session.Step != Idle {
 		s.handleTransactionStep(msg, session)
+		return
+	}
+
+	//0.5 Если сообщение - продолжение отчета
+	if buf, ok := reportBuffers[bufKey]; ok {
+		buf.text += "\n\n" + msg.Text
+		if buf.timer != nil {
+			buf.timer.Stop()
+		}
+		buf.timer = time.AfterFunc(3*time.Second, func() {
+			s.flushBufferedReport(bufKey, userID)
+		})
+		return
+	}
+
+	//1. Новое сообщение похоже на начало отчета
+	if helpers.IsLikelyReport(text) {
+		username := helpers.ResolveUsername(msg)
+
+		// На всякий случай отменим предыдущий таймер, если он был
+		if prev, exists := reportBuffers[bufKey]; exists && prev.timer != nil {
+			prev.timer.Stop()
+		}
+
+		reportBuffers[bufKey] = &reportBuffer{
+			text:        msg.Text,
+			username:    username,
+			originalMsg: msg,
+			forwardDate: msg.ForwardDate,
+			timer: time.AfterFunc(3*time.Second, func() {
+				s.flushBufferedReport(bufKey, userID)
+			}),
+		}
 		return
 	}
 
@@ -115,10 +155,6 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 	}
 
 	//2.Общие команды
-	if helpers.IsLikelyReport(text) {
-		s.handleReport(msg)
-		return
-	}
 	if msg.Chat.IsPrivate() {
 		switch {
 		case text == "/start":

@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
 	"math/rand"
 	"net/http"
@@ -169,4 +170,14 @@ func ExtractReportBody(original string) string {
 		return strings.Join(origLines[1:], "\n")
 	}
 	return ""
+}
+
+func ResolveUsername(msg *tgbotapi.Message) string {
+	if msg.ForwardFrom != nil && msg.ForwardFrom.UserName != "" {
+		return msg.ForwardFrom.UserName
+	}
+	if msg.From != nil && msg.From.UserName != "" {
+		return msg.From.UserName
+	}
+	return "unknown_user"
 }
