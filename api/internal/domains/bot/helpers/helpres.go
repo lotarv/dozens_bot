@@ -110,6 +110,8 @@ func generateNamePatterns() []string {
 				first+last,
 				last+first,
 				last,
+				last+"_"+first,
+				first+"_"+last,
 			)
 		} else if len(parts) == 1 {
 			patterns = append(patterns, parts[0])
@@ -119,6 +121,7 @@ func generateNamePatterns() []string {
 }
 
 func IsLikelyReport(text string) bool {
+	//TODO: возможные варианты хештегов не хардкод
 	text = strings.ToLower(strings.ReplaceAll(text, "ё", "е"))
 	patterns := generateNamePatterns()
 
