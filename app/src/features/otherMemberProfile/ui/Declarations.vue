@@ -7,7 +7,6 @@ import SadFaceIcon from '@/components/icons/SadFaceIcon.vue';
 import TimeIcon from '@/components/icons/TimeIcon.vue';
 import { DeclarationDocument } from '../entities/DeclarationDocument';
 import { DeclarationStatus } from '../lib/constants';
-import { decl } from 'postcss';
 import { useRouter } from 'vue-router';
 import { Member } from '@/types/Member';
 const props = defineProps<{
@@ -17,16 +16,17 @@ const props = defineProps<{
 const router = useRouter()
 
 function formatDate(dateStr:string) {
-    if (dateStr == "") return "Не установлена"
+    if (dateStr == "") return "(без даты окончания)"
     const date = new Date(dateStr)
     const day = date.getUTCDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0")
     const year = date.getFullYear();
 
-    return `${day}.${month}.${year}`
+    return `До ${day}.${month}.${year}`
 }
 
 function declarationStatus(declaration: DeclarationDocument):string {
+    if (declaration.end_date == null) return "progress"
     const declaration_date = new Date(declaration.end_date? declaration.end_date : "")
     const now = new Date();
     if (now < declaration_date) {
@@ -61,6 +61,7 @@ function getIcon(declaration:DeclarationDocument) {
 }
 
 function getStatusText(declaration:DeclarationDocument) {
+    if (declaration.end_date == null) return "Текущая"
     const end_date = new Date(declaration.end_date? declaration.end_date : "")
     const now = new Date()
     if (now < end_date) {
@@ -93,7 +94,7 @@ onBeforeMount(() => {
         <div class="info" :class="declarationStatus(declaration)" :style="{color: declarationStatus(declaration) == 'progress'? 'white': 'black'}">
           <component class="icon" :is="getIcon(declaration)" :style="{color: getBgColor(declaration)}" />
           <span>{{ getStatusText(declaration) }}</span>
-          <span>{{ `До ${formatDate(declaration.end_date? declaration.end_date : "")}` }}</span>
+          <span class="whitespace-nowrap">{{ formatDate(declaration.end_date != null? declaration.end_date : "") }}</span>
         </div>
         <div class="link-sign" :style="{color: declarationStatus(declaration) == 'progress'? 'white': 'black'}">
           <ArrowIcon />

@@ -49,7 +49,7 @@ func (s *BotService) handleDeclaration(msg *tgbotapi.Message) {
 	if msg.ForwardFrom != nil && msg.ForwardFrom.UserName != "" {
 		username = msg.ForwardFrom.UserName
 	} else if msg.From != nil && msg.From.UserName != "" {
-		username = "incetro"
+		username = msg.From.UserName
 	} else {
 		slog.Warn("Declaration without username", "chat_id", chatID)
 		s.replyTo(msg, "Ошибка при определении автора декларации")
