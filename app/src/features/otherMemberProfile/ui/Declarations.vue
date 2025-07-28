@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Declaration } from '@/types/Declaration';
 import ArrowIcon from '@/components/icons/ArrowIcon.vue';
-import { computed } from 'vue';
+import { computed, onBeforeMount } from 'vue';
 import HappyFaceIcon from '@/components/icons/HappyFaceIcon.vue'
 import SadFaceIcon from '@/components/icons/SadFaceIcon.vue';
 import TimeIcon from '@/components/icons/TimeIcon.vue';
@@ -17,6 +17,7 @@ const props = defineProps<{
 const router = useRouter()
 
 function formatDate(dateStr:string) {
+    if (dateStr == "") return "Не установлена"
     const date = new Date(dateStr)
     const day = date.getUTCDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0")
@@ -26,7 +27,7 @@ function formatDate(dateStr:string) {
 }
 
 function declarationStatus(declaration: DeclarationDocument):string {
-    const declaration_date = new Date(declaration.end_date)
+    const declaration_date = new Date(declaration.end_date? declaration.end_date : "")
     const now = new Date();
     if (now < declaration_date) {
         return "progress"
@@ -60,7 +61,7 @@ function getIcon(declaration:DeclarationDocument) {
 }
 
 function getStatusText(declaration:DeclarationDocument) {
-    const end_date = new Date(declaration.end_date)
+    const end_date = new Date(declaration.end_date? declaration.end_date : "")
     const now = new Date()
     if (now < end_date) {
         return "Текущая"
@@ -72,6 +73,10 @@ function openDeclaration(declaration: DeclarationDocument) {
     router.push(`/declaration/${props.member.username}/${declaration.id}`)
 }
 
+onBeforeMount(() => {
+    console.log("DECLARATIONS: ", props.declarations)
+})
+
 </script>
 
 <template>
@@ -81,14 +86,14 @@ function openDeclaration(declaration: DeclarationDocument) {
         v-if="props.declarations && props.declarations.length > 0"
         class="single-declaration"
         v-for="declaration in declarations"
-        :key="declaration.end_date"
+        :key="declaration.id"
         :style="{ backgroundColor: getBgColor(declaration) }"
         @click="() => openDeclaration(declaration)"
       >
         <div class="info" :class="declarationStatus(declaration)" :style="{color: declarationStatus(declaration) == 'progress'? 'white': 'black'}">
           <component class="icon" :is="getIcon(declaration)" :style="{color: getBgColor(declaration)}" />
           <span>{{ getStatusText(declaration) }}</span>
-          <span>{{ `До ${formatDate(declaration.end_date)}` }}</span>
+          <span>{{ `До ${formatDate(declaration.end_date? declaration.end_date : "")}` }}</span>
         </div>
         <div class="link-sign" :style="{color: declarationStatus(declaration) == 'progress'? 'white': 'black'}">
           <ArrowIcon />
