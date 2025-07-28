@@ -127,12 +127,40 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 		return
 	}
 
-	if helpers.IsLikelyDeclaration(text) {
-		s.handleDeclaration(msg)
+	//1.5 Если сообщение - продолжение декларации
+	if buf, ok := declarationBuffers[bufKey]; ok {
+		buf.text += "\n\n" + msg.Text
+		if buf.timer != nil {
+			buf.timer.Stop()
+		}
+		buf.timer = time.AfterFunc(3*time.Second, func() {
+			s.flushBufferedDeclaration(bufKey, userID)
+		})
 		return
 	}
 
-	//1.Проверяем текущее состояние пользователя
+	//2. Новое сообщение похоже на начало декларации
+	if helpers.IsLikelyDeclaration(text) {
+		username := helpers.ResolveUsername(msg)
+		// На всякий случай отменим предыдущий таймер, если он был
+		if prev, exists := declarationBuffers[bufKey]; exists && prev.timer != nil {
+			prev.timer.Stop()
+		}
+
+		declarationBuffers[bufKey] = &declarationBuffer{
+			text:        msg.Text,
+			username:    username,
+			originalMsg: msg,
+			forwardDate: msg.ForwardDate,
+			timer: time.AfterFunc(3*time.Second, func() {
+				s.flushBufferedDeclaration(bufKey, userID)
+			}),
+		}
+
+		return
+	}
+
+	//3.Проверяем текущее состояние пользователя
 	state, err := s.repo.GetUserState(userID)
 	if err != nil {
 		slog.Error("Failed to get user state", "user_id", userID, "err", err)
@@ -158,7 +186,7 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 		return
 	}
 
-	//2.Общие команды
+	//4.Общие команды
 	if msg.Chat.IsPrivate() {
 		switch {
 		case text == "/start":

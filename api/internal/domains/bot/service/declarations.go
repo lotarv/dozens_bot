@@ -13,6 +13,34 @@ import (
 	"github.com/lotarv/dozens_bot/internal/utils/crypto"
 )
 
+var declarationBuffers = map[string]*declarationBuffer{}
+
+type declarationBuffer struct {
+	text        string
+	username    string
+	timer       *time.Timer
+	originalMsg *tgbotapi.Message
+	forwardDate int
+}
+
+func (s *BotService) flushBufferedDeclaration(key string, userID int64) {
+	buf, ok := declarationBuffers[key]
+	if !ok {
+		return
+	}
+	delete(declarationBuffers, key)
+
+	dummyMsg := &tgbotapi.Message{
+		MessageID:   buf.originalMsg.MessageID,
+		Chat:        buf.originalMsg.Chat,
+		From:        buf.originalMsg.From,
+		Text:        buf.text,
+		Date:        buf.originalMsg.Date,
+		ForwardDate: buf.forwardDate,
+	}
+	s.handleDeclaration(dummyMsg)
+}
+
 func (s *BotService) handleDeclaration(msg *tgbotapi.Message) {
 
 	chatID := msg.Chat.ID
