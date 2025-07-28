@@ -38,3 +38,7 @@ func (c *DocumentsController) Build() {
 func (c *DocumentsController) Run() {
 
 }
+
+func (c *DocumentsController) GetRepository() *repository.DocumentsRepository {
+	return c.repo
+}

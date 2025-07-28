@@ -1,10 +1,16 @@
 package service
 
 import (
-<<<<<<< HEAD
-	"time"
-
+	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/google/uuid"
+	"github.com/jomei/notionapi"
+	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
+	"github.com/lotarv/dozens_bot/internal/utils/crypto"
+	"log/slog"
+	"os"
+	"strings"
+	"time"
 )
 
 var reportBuffers = map[string]*reportBuffer{}
@@ -33,19 +39,8 @@ func (s *BotService) flushBufferedReport(key string, userID int64) {
 		ForwardDate: buf.forwardDate,
 	}
 	s.handleReport(dummyMsg)
-=======
-	"context"
-	"log/slog"
-	"os"
-	"strings"
-	"time"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/google/uuid"
-	"github.com/jomei/notionapi"
-	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
-	"github.com/lotarv/dozens_bot/internal/utils/crypto"
-)
+}
 
 func (s *BotService) createDocument(id string) error {
 	properties := notionapi.Properties{
@@ -216,5 +211,4 @@ func (s *BotService) handleReport(msg *tgbotapi.Message) {
 	}
 
 	s.replyTo(msg, "Отчёт успешно принят ✅")
->>>>>>> 260dcfe (refactor(backend): reports refactoring)
 }

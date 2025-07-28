@@ -3,14 +3,16 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"strconv"
+	"strings"
+	"time"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jomei/notionapi"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
 	user_types "github.com/lotarv/dozens_bot/internal/domains/user/types"
-	"log/slog"
-	"strconv"
-	"strings"
 )
 
 type repository interface {

@@ -28,6 +28,10 @@ type PiggyBankRepository interface {
 	ChangeBankBalance(ctx context.Context, piggyBankID int, amount int, reason string, username string) error
 }
 
+type DocumentsRepository interface {
+	CreateDeclaration() error
+}
+
 func New(storage *storage.Storage, userRepo UsersRepository, bankRepo *bank_repo.PiggyBankRepository) *BotRepository {
 	return &BotRepository{
 		db:                  storage.DB(),

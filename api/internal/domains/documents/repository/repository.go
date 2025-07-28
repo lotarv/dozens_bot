@@ -100,13 +100,12 @@ func (r *DocumentsRepository) GetDeclarations(username string) ([]types.Declarat
 
 	query := `
 	SELECT
-		docs.text,
+		dec.text,
 		dec.creation_date,
 		dec.end_date,
 		dec.status,
 		dec.id
 	FROM declarations dec
-	JOIN documents docs ON dec.document_id = docs.document_notion_id
 	JOIN members m ON dec.author_notion_id = m.notion_database_id
 	WHERE m.username=$1
 	ORDER BY dec.creation_date DESC
