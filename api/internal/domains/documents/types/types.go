@@ -34,9 +34,9 @@ type ReportsResponse struct {
 }
 
 type DeclarationDocument struct {
-	ID           string `json:"id" db:"id"`
-	Text         string `json:"text" db:"text"`
-	EndDate      string `json:"end_date" db:"end_date"`
-	CreationDate string `json:"creation_date" db:"creation_date"`
-	Status       string `json:"status" db:"status"`
+	ID           string  `json:"id" db:"id"`
+	Text         string  `json:"text" db:"text"`
+	EndDate      *string `json:"end_date" db:"end_date"`
+	CreationDate string  `json:"creation_date" db:"creation_date"`
+	Status       string  `json:"status" db:"status"`
 }

@@ -122,13 +122,12 @@ func (r *DocumentsRepository) GetDeclarationByID(id string) (*types.DeclarationD
 
 	query := `
 	SELECT
-		docs.text,
+		dec.text,
 		dec.creation_date,
 		dec.end_date,
 		dec.status,
 		dec.id
 	FROM declarations dec
-	JOIN documents docs ON dec.document_id = docs.document_notion_id
 	WHERE dec.id = $1
 	LIMIT 1
 	`

@@ -21,7 +21,7 @@ func NewDocumentsController(router *chi.Mux, db *storage.Storage) *DocumentsCont
 	service := service.New(repo)
 	transport := transport.New(router, service)
 
-	declarations, err := service.GetDeclarations("yurii_happy_math")
+	declarations, err := service.GetDeclarations("incetro")
 	slog.Info("got declarations", "declarations", declarations, "error", err)
 
 	return &DocumentsController{

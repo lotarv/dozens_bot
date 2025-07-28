@@ -71,8 +71,8 @@ func (t *DocumentsTransport) getDeclarations(w http.ResponseWriter, r *http.Requ
 	username := chi.URLParam(r, "username")
 	declarations, err := t.service.GetDeclarations(username)
 	if err != nil {
-		http.Error(w, "failed to fetch reports", http.StatusInternalServerError)
-		slog.Error("failed to fetch reports", "error", err)
+		http.Error(w, "failed to fetch declarations", http.StatusInternalServerError)
+		slog.Error("failed to fetch declarations", "error", err)
 		return
 	}
 
