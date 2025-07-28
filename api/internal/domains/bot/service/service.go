@@ -320,6 +320,10 @@ func (s *BotService) handleUnknown(msg *tgbotapi.Message) {
 func (s *BotService) createDozen(usr *tgbotapi.User, userID int64) {
 	session := getSession(userID)
 
+	if usr.UserName != "incetro" {
+		s.bot.Send(tgbotapi.NewMessage(userID, "На данный момент создание десяток недоступно, попробуйте позже"))
+		return
+	}
 	if session.User.FullName != "" {
 		s.bot.Send(tgbotapi.NewMessage(userID, "Введите название вашей десятки:"))
 		s.repo.SetUserState(userID, "create_enter_name")
