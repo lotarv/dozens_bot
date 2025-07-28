@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
 	"math/rand"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func TriggerSyncDocuments() error {
@@ -142,6 +143,11 @@ func IsLikelyReport(text string) bool {
 	}
 
 	return false
+}
+
+func IsLikelyDeclaration(text string) bool {
+	lowerText := strings.ToLower(text)
+	return strings.Contains(lowerText, "#декларация")
 }
 
 func ExtractReportBody(original string) string {

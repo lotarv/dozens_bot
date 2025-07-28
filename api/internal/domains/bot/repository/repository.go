@@ -7,6 +7,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
+	documents_repo "github.com/lotarv/dozens_bot/internal/domains/documents/repository"
+	document_types "github.com/lotarv/dozens_bot/internal/domains/documents/types"
 	bank_repo "github.com/lotarv/dozens_bot/internal/domains/piggy_bank/repository"
 	user_types "github.com/lotarv/dozens_bot/internal/domains/user/types"
 	"github.com/lotarv/dozens_bot/internal/storage"
@@ -16,6 +18,7 @@ type BotRepository struct {
 	db *sqlx.DB
 	UsersRepository
 	PiggyBankRepository
+	DocumentsRepository
 }
 
 type UsersRepository interface {
@@ -29,14 +32,15 @@ type PiggyBankRepository interface {
 }
 
 type DocumentsRepository interface {
-	CreateDeclaration() error
+	CreateDeclaration(declaration document_types.DeclarationDB) error
 }
 
-func New(storage *storage.Storage, userRepo UsersRepository, bankRepo *bank_repo.PiggyBankRepository) *BotRepository {
+func New(storage *storage.Storage, userRepo UsersRepository, bankRepo *bank_repo.PiggyBankRepository, docsRepo *documents_repo.DocumentsRepository) *BotRepository {
 	return &BotRepository{
 		db:                  storage.DB(),
 		UsersRepository:     userRepo,
 		PiggyBankRepository: bankRepo,
+		DocumentsRepository: docsRepo,
 	}
 }
 

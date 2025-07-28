@@ -12,6 +12,7 @@ import (
 	"github.com/jomei/notionapi"
 	"github.com/lotarv/dozens_bot/internal/domains/bot/helpers"
 	bot_types "github.com/lotarv/dozens_bot/internal/domains/bot/types/bot"
+	document_types "github.com/lotarv/dozens_bot/internal/domains/documents/types"
 	user_types "github.com/lotarv/dozens_bot/internal/domains/user/types"
 )
 
@@ -38,6 +39,7 @@ type repository interface {
 	SetEncryptedText(uuidStr string, encryptedText string) error
 
 	ChangeBankBalance(ctx context.Context, piggyBankID int, amount int, reason string, username string) error
+	CreateDeclaration(declaration document_types.DeclarationDB) error
 }
 
 type BotService struct {
@@ -122,6 +124,11 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 				s.flushBufferedReport(bufKey, userID)
 			}),
 		}
+		return
+	}
+
+	if helpers.IsLikelyDeclaration(text) {
+		s.handleDeclaration(msg)
 		return
 	}
 

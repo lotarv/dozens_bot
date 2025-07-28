@@ -77,7 +77,7 @@ func New() *App {
 	piggyBankController := piggy_bank.NewPiggyBankController(router, storage)
 	app.AddController(piggyBankController)
 
-	botController := bot.NewBotController(storage, userController.GetRepository(), piggyBankController.GetRepository(), router)
+	botController := bot.NewBotController(storage, userController.GetRepository(), piggyBankController.GetRepository(), router, documentsController.GetRepository())
 	app.AddController(botController)
 	return app
 }

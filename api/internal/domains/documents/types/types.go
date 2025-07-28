@@ -40,3 +40,12 @@ type DeclarationDocument struct {
 	CreationDate string  `json:"creation_date" db:"creation_date"`
 	Status       string  `json:"status" db:"status"`
 }
+
+type DeclarationDB struct {
+	ID             string  `json:"id" db:"id"`
+	AuthorNotionID string  `json:"author_notion_id" db:"author_notion_id"`
+	Text           string  `json:"text" db:"text"`
+	EndDate        *string `json:"end_date" db:"end_date"`
+	CreationDate   string  `json:"creation_date" db:"creation_date"`
+	Status         string  `json:"status" db:"status"`
+}

@@ -138,3 +138,13 @@ func (r *DocumentsRepository) GetDeclarationByID(id string) (*types.DeclarationD
 	}
 	return &declaration, nil
 }
+
+func (r *DocumentsRepository) CreateDeclaration(declaration types.DeclarationDB) error {
+	query := `
+	INSERT INTO declarations (id, author_notion_id, creation_date, end_date, status, text)
+	VALUES (:id, :author_notion_id, :creation_date, :end_date, :status, :text)
+	`
+
+	_, err := r.db.NamedExec(query, declaration)
+	return err
+}
