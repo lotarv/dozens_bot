@@ -44,6 +44,9 @@ export class DozensTransport {
     static async GetMeetings(): Promise<Meeting2[]> {
         try {
             const {data} = await api.get<Meeting2[]>("/meetings")
+            if (data == null) {
+                return []
+            }
             return data
         } catch(e) {
             console.error("failed to get meetings: ", e)
