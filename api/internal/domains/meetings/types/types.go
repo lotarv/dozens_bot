@@ -7,4 +7,5 @@ type Meeting struct {
 	EndTime      *string `json:"end_time" db:"end_time"`
 	LocationName string  `json:"location_name" db:"location_name"`
 	MapUrl       string  `json:"map_url" db:"map_url"`
+	MeetingDate  string  `json:"meeting_date" db:"meeting_date"`
 }
