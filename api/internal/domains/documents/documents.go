@@ -1,8 +1,6 @@
 package documents
 
 import (
-	"log/slog"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/lotarv/dozens_bot/internal/domains/documents/repository"
 	"github.com/lotarv/dozens_bot/internal/domains/documents/service"
@@ -20,9 +18,6 @@ func NewDocumentsController(router *chi.Mux, db *storage.Storage) *DocumentsCont
 	repo := repository.New(db.DB())
 	service := service.New(repo)
 	transport := transport.New(router, service)
-
-	declarations, err := service.GetDeclarations("incetro")
-	slog.Info("got declarations", "declarations", declarations, "error", err)
 
 	return &DocumentsController{
 		repo:      repo,

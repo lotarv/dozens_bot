@@ -40,6 +40,8 @@ type repository interface {
 
 	ChangeBankBalance(ctx context.Context, piggyBankID int, amount int, reason string, username string) error
 	CreateDeclaration(declaration document_types.DeclarationDB) error
+
+	CreateMeeting(dozenID int, startTime string, endTime *string, locationName, mapURL string) error
 }
 
 type BotService struct {
@@ -157,6 +159,11 @@ func (s *BotService) handleMessage(msg *tgbotapi.Message) {
 			}),
 		}
 
+		return
+	}
+
+	if helpers.IsLikelyMeeting(text) {
+		s.handleMeeting(msg)
 		return
 	}
 

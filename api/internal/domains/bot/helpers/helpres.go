@@ -188,3 +188,8 @@ func ResolveUsername(msg *tgbotapi.Message) string {
 	}
 	return "unknown_user"
 }
+
+func IsLikelyMeeting(text string) bool {
+	lowerText := strings.ToLower(text)
+	return strings.Contains(lowerText, "#встреча")
+}

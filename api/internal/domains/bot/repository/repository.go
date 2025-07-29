@@ -171,3 +171,12 @@ func (r *BotRepository) GetMembers() ([]bot_types.MemberDB, error) {
 	}
 	return members, nil
 }
+
+func (r *BotRepository) CreateMeeting(dozenID int, startTime string, endTime *string, locationName, mapURL string) error {
+	query := `
+		INSERT INTO meetings (dozen_id, start_time, end_time, location_name, map_url)
+		VALUES ($1, $2, $3, $4, $5)
+	`
+	_, err := r.db.Exec(query, dozenID, startTime, endTime, locationName, mapURL)
+	return err
+}

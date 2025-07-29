@@ -8,6 +8,7 @@ import (
 	member_types "github.com/lotarv/dozens_bot/internal/domains/members/types"
 	"github.com/lotarv/dozens_bot/internal/domains/user/types"
 	"github.com/lotarv/dozens_bot/internal/storage"
+	global_types "github.com/lotarv/dozens_bot/internal/types"
 )
 
 type UsersRepository struct {
@@ -87,4 +88,22 @@ func (r *UsersRepository) GetMemberByUsername(username string) (member_types.Mem
 	}
 
 	return member, nil
+}
+
+func (r *UsersRepository) GetUserDozenByUsername(username string) (global_types.Dozen, error) {
+	//TODO: remove myself
+	if username == "lotarv" {
+		username = "incetro"
+	}
+
+	var dozen global_types.Dozen
+	query := `SELECT dozens.id, dozens.code, dozens.name, dozens.captain FROM dozens
+	JOIN user_dozen on user_dozen.dozen_id = dozens.id
+	WHERE user_dozen.username = $1`
+
+	err := r.db.Get(&dozen, query, username)
+	if err != nil {
+		return global_types.Dozen{}, err
+	}
+	return dozen, nil
 }
