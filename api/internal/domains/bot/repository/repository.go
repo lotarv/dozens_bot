@@ -176,6 +176,12 @@ func (r *BotRepository) CreateMeeting(dozenID int, startTime string, endTime *st
 	query := `
 		INSERT INTO meetings (dozen_id, start_time, end_time, location_name, map_url)
 		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (dozen_id, meeting_date)
+		DO UPDATE SET 
+			start_time = EXCLUDED.start_time,
+			end_time = EXCLUDED.end_time,
+			location_name = EXCLUDED.location_name,
+			map_url = EXCLUDED.map_url
 	`
 	_, err := r.db.Exec(query, dozenID, startTime, endTime, locationName, mapURL)
 	return err
