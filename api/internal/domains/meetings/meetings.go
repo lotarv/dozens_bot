@@ -1,9 +1,6 @@
 package meetings
 
 import (
-	"context"
-	"log/slog"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/lotarv/dozens_bot/internal/domains/meetings/repository"
 	"github.com/lotarv/dozens_bot/internal/domains/meetings/service"
@@ -22,9 +19,6 @@ func NewMeetingsController(storage *storage.Storage, router *chi.Mux, userRepo *
 	repo := repository.New(storage, userRepo)
 	service := service.New(repo)
 	transport := transport.New(router, service)
-
-	meetings, err := service.GetDozenMeetings(context.Background(), 2131833589)
-	slog.Info("GOT MEETINGS ", "meetings", meetings, "error", err)
 
 	return &MeetingsController{
 		repo:      repo,
