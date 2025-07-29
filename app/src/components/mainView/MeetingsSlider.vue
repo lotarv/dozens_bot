@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import {Swiper, SwiperSlide} from 'swiper/vue';
 import MeetingCard from './MeetingCard.vue'
-import { Meeting } from '@/types/Meeting'
+import { Meeting, Meeting2 } from '@/types/Meeting'
 import { onMounted, ref } from 'vue';
-import { meetings } from '@/mocks/meetings';
 
 const props = defineProps<{
-  meetings: Meeting[]
+  meetings: Meeting2[]
 }>()
 
-const currentIndex = ref(meetings.length - 1)
+const currentIndex = ref(props.meetings.length - 1)
 
 function handleSlideChange(swiper:any) {
   currentIndex.value = swiper.realIndex

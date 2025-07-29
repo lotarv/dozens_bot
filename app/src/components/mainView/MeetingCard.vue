@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Meeting } from '@/types/Meeting';
+import { Meeting, Meeting2 } from '@/types/Meeting';
 import ArrowIcon from '../icons/ArrowIcon.vue';
 import { computed } from 'vue';
 import { UseMeetingsStore } from '@/stores/meetingsStore';
@@ -7,7 +7,7 @@ import { useMembersStore } from '@/stores/membersStore';
 
 const meetingsStore = UseMeetingsStore()
 const props = defineProps<{
-    meeting: Meeting;
+    meeting: Meeting2;
     currentIndex: number,
     total: number,
 }>()
@@ -37,7 +37,7 @@ function formatDateTime(isoDate: string): string {
 }
 
 const isNextMeeting = computed(() => {
-    const meetingDate = new Date(props.meeting.date)
+    const meetingDate = new Date(props.meeting.start_time)
     const now = new Date();
     return meetingDate > now;
 })
@@ -47,6 +47,30 @@ function openLink(url: string) {
         window.open(url, '_blank');
     }
 }
+
+const members =  [
+    {
+        fio:"",
+        niche: "",
+        annual_income: 100,
+        username: "member1",
+        avatar_url: "/images/members/member1.png"
+    },
+    {
+        fio:"",
+        niche: "",
+        annual_income: 100,
+        username: "member2",
+        avatar_url: "/images/members/member2.png",
+    },
+    {
+        fio:"",
+        niche: "",
+        annual_income: 100,
+        username: "member3",
+        avatar_url: "/images/members/member3.png",
+    },
+]
 </script>
 <template>
     <div class="card" :style="{
@@ -61,14 +85,14 @@ function openLink(url: string) {
         <div class="content">
             <div class="avatars">
                 <img
-                    v-for="member in meeting.members"
+                    v-for="member in members"
                     :src="member.avatar_url"
                     alt="avatar"
                     :style="{borderColor: colors[currentIndex % colors.length]}">
             </div>
-            <div class="meeting-date">{{ formatDateTime(meeting.date) }}</div>
+            <div class="meeting-date">{{ formatDateTime(meeting.start_time) }}</div>
             <div class="meeting-location">
-                <span @click="openLink(meeting.map_url)">{{ meeting.location }}</span>
+                <span @click="openLink(meeting.map_url)">{{ meeting.location_name }}</span>
                 <span class="text-[24px]"><ArrowIcon></ArrowIcon></span>
             </div>
         </div>

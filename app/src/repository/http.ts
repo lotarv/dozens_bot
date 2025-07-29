@@ -1,6 +1,7 @@
 import api from "@/services/api"
 import { DeclarationDocument } from "@/features/otherMemberProfile/entities/DeclarationDocument"
 import { PiggyBank } from "@/features/piggyBank/entities/PiggyBank"
+import { Meeting2 } from "@/types/Meeting"
 
 export class DozensTransport {
     static async GetDeclarations(username: string): Promise<DeclarationDocument[]> {
@@ -37,6 +38,16 @@ export class DozensTransport {
             await api.post('/bot/new-transaction')
         } catch(error) {
             console.error("failed to open bot: ", error)
+        }
+    }
+
+    static async GetMeetings(): Promise<Meeting2[]> {
+        try {
+            const {data} = await api.get<Meeting2[]>("/meetings")
+            return data
+        } catch(e) {
+            console.error("failed to get meetings: ", e)
+            return []
         }
     }
 }

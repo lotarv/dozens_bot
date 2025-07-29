@@ -18,6 +18,7 @@ import { useMembersStore } from '@/stores/membersStore';
 import { useDecryptionStore } from '@/stores/decryption';
 import { useRouter } from 'vue-router';
 import { useBankStore } from '@/features/piggyBank/model/bankStore';
+import { UseMeetingsStore } from '@/stores/meetingsStore';
 interface Member {
     fio: string;
     avatar_url: string;
@@ -29,6 +30,7 @@ interface Member {
 const membersStore = useMembersStore()
 const cryptStore = useDecryptionStore()
 const bankStore = useBankStore()
+const meetingsStore = UseMeetingsStore()
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const router = useRouter()
@@ -66,6 +68,8 @@ onBeforeMount(async () => {
     if (cryptStore.key == "") {
         router.push({name: "login"})
     }
+    await meetingsStore.fetchMeetings()
+    console.log("MEETINGS: ", meetingsStore.meetings)
     await membersStore.fetchMembers();
     await bankStore.fetchPiggyBank()
     isReady.value = true
@@ -86,7 +90,7 @@ onBeforeMount(async () => {
             </div>
         </div>
         <div class="slider-container">
-            <MeetingsSlider :meetings="meetings"/>
+            <MeetingsSlider :meetings="meetingsStore.meetings"/>
         </div>
         <div class="info-block-1">
             <div class="flex-1 inactive">
