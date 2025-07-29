@@ -30,7 +30,7 @@ func New(storage *storage.Storage, userRepo UsersRepository) *MeetingsRepository
 
 func (r *MeetingsRepository) GetDozenMeetings(dozen_id int) ([]types.Meeting, error) {
 	var meetings []types.Meeting
-	err := r.DB().Select(&meetings, `SELECT * FROM meetings WHERE dozen_id=$1 ORDER BY start_time DESC`, dozen_id)
+	err := r.DB().Select(&meetings, `SELECT * FROM meetings WHERE dozen_id=$1 ORDER BY start_time ASC`, dozen_id)
 	if err != nil {
 		return nil, err
 	}

@@ -27,7 +27,7 @@ function handleSlideChange(swiper:any) {
       class="swiper"
       @slide-change="handleSlideChange"
     >
-  <SwiperSlide v-for="(meeting, index) in meetings.reverse()" :key="index" class="slider-item">
+  <SwiperSlide v-for="(meeting, index) in meetings" :key="index" class="slider-item">
     <MeetingCard :meeting="meeting" :total="meetings.length" :currentIndex="index" />
   </SwiperSlide>
 
